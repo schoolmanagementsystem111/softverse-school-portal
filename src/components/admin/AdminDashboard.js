@@ -16,6 +16,8 @@ import SchoolLeavingCertificate from './SchoolLeavingCertificate';
 import AdminResults from './AdminResults';
 import SchoolProfile from './SchoolProfile';
 import FeeChalan from './FeeChalan';
+import FeeDefaulters from './FeeDefaulters';
+import Ledger from './Ledger';
 import AdminWhatsApp from './AdminWhatsApp';
 import AdminTimetable from './AdminTimetable';
 import TransportDashboard from '../transport/TransportDashboard';
@@ -24,6 +26,10 @@ import AccountsDashboard from '../accounts/AccountsDashboard';
 import HostelDashboard from '../hostel/HostelDashboard';
 import CafeteriaDashboard from '../cafeteria/CafeteriaDashboard';
 import TeacherQRCards from './TeacherQRCards';
+import StudentBiodata from './StudentBiodata';
+import StudentContactList from './StudentContactList';
+import SiblingManagement from './SiblingManagement';
+import AdmissionInquiries from './AdmissionInquiries';
 
 const AdminDashboard = () => {
   const { logout, currentUser } = useAuth();
@@ -124,6 +130,10 @@ const AdminDashboard = () => {
           <Routes>
             <Route path="/dashboard" element={<AdminOverview />} />
             <Route path="/users" element={<UserManagement />} />
+            <Route path="/student-biodata" element={<StudentBiodata />} />
+            <Route path="/student-contact-list" element={<StudentContactList />} />
+            <Route path="/sibling-management" element={<SiblingManagement />} />
+            <Route path="/admission-inquiries" element={<AdmissionInquiries />} />
             <Route path="/classes" element={<ClassManagement />} />
             <Route path="/attendance" element={<AttendanceReports />} />
             <Route path="/teacher-attendance" element={<TeacherAttendance />} />
@@ -136,6 +146,8 @@ const AdminDashboard = () => {
             <Route path="/results" element={<AdminResults />} />
             <Route path="/school-profile" element={<SchoolProfile />} />
             <Route path="/fee-chalan" element={<FeeChalan />} />
+            <Route path="/fee-defaulters" element={<FeeDefaulters />} />
+            <Route path="/ledger" element={<Ledger />} />
             <Route path="/library" element={<LibraryDashboard />} />
             <Route path="/cafeteria" element={<CafeteriaDashboard />} />
             <Route path="/accounts" element={<AccountsDashboard />} />

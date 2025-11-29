@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import ModuleSidebar from '../common/ModuleSidebar';
 
 const gradientHeader = {
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  background: 'var(--gradient-primary)',
   color: 'white',
   border: 'none'
 };
@@ -112,11 +112,11 @@ const CafeteriaDashboard = () => {
         title="Cafeteria"
         onLogout={handleLogout}
         items={[
-          { key: 'overview', label: 'Overview', icon: 'fas fa-tachometer-alt', onClick: () => setActiveTab('overview') },
-          { key: 'menu', label: 'Menu', icon: 'fas fa-utensils', onClick: () => setActiveTab('menu') },
-          { key: 'orders', label: 'Orders', icon: 'fas fa-receipt', onClick: () => setActiveTab('orders') },
-          { key: 'inventory', label: 'Inventory', icon: 'fas fa-boxes', onClick: () => setActiveTab('inventory') },
-          { key: 'reports', label: 'Reports', icon: 'fas fa-chart-line', onClick: () => setActiveTab('reports') }
+          { key: 'overview', label: 'Overview', icon: 'dashboard', onClick: () => setActiveTab('overview') },
+          { key: 'menu', label: 'Menu', icon: 'restaurant_menu', onClick: () => setActiveTab('menu') },
+          { key: 'orders', label: 'Orders', icon: 'receipt_long', onClick: () => setActiveTab('orders') },
+          { key: 'inventory', label: 'Inventory', icon: 'inventory_2', onClick: () => setActiveTab('inventory') },
+          { key: 'reports', label: 'Reports', icon: 'insights', onClick: () => setActiveTab('reports') }
         ]}
       />)}
       <div className="flex-grow-1 d-flex flex-column container-enhanced">

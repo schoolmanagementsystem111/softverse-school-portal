@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Nav, Button } from 'react-bootstrap';
+import { Nav } from 'react-bootstrap';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 
@@ -35,12 +35,12 @@ const ModuleSidebar = ({ title = 'Module', items = [], onLogout, onClose }) => {
   return (
     <div className="sidebar-enhanced" style={{ width: '280px', minHeight: '100vh', position: 'relative' }}>
       <button className="sidebar-close-btn" onClick={handleCloseSidebar}>
-        <i className="fas fa-times"></i>
+        <span className="material-symbols-rounded" data-icon="close">close</span>
       </button>
       <div className="p-4">
         <div className="d-flex align-items-center">
           <div className="me-3">
-            <i className="fas fa-layer-group fa-2x" style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}></i>
+            <span className="material-symbols-rounded sidebar-header-icon" data-icon="dashboard" style={{ display: 'inline-flex' }}>dashboard</span>
           </div>
           <div>
             <h5 className="mb-0" style={{ fontWeight: '700', color: 'white' }}>{title}</h5>
@@ -50,14 +50,14 @@ const ModuleSidebar = ({ title = 'Module', items = [], onLogout, onClose }) => {
       </div>
       <Nav className="flex-column px-3">
         {items.map((it) => (
-          <Nav.Link key={it.key} className="text-white" onClick={() => { it.onClick(); handleCloseSidebar(); }} style={{ cursor: 'pointer' }}>
-            <i className={`${it.icon} me-2`}></i>
+          <Nav.Link key={it.key} className="text-white sidebar-item" onClick={() => { it.onClick(); handleCloseSidebar(); }} style={{ cursor: 'pointer' }}>
+            <span className="material-symbols-rounded me-2" data-icon={it.icon}>{it.icon}</span>
             {it.label}
           </Nav.Link>
         ))}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: '10px', paddingTop: '10px' }}>
-          <Nav.Link className="text-white" onClick={() => { if (onLogout) onLogout(); handleCloseSidebar(); }} style={{ cursor: 'pointer' }}>
-            <i className="fas fa-sign-out-alt me-2"></i>
+          <Nav.Link className="text-white sidebar-item" onClick={() => { if (onLogout) onLogout(); handleCloseSidebar(); }} style={{ cursor: 'pointer' }}>
+            <span className="material-symbols-rounded me-2" data-icon="logout">logout</span>
             Logout
           </Nav.Link>
         </div>

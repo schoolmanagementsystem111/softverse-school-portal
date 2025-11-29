@@ -63,7 +63,7 @@ const ParentSidebar = ({ onClose, handleLogout }) => {
       <div className="p-4">
         <div className="d-flex align-items-center">
           <div className="me-3">
-            <i className="fas fa-users fa-2x" style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}></i>
+            <span className="material-symbols-rounded sidebar-header-icon" data-icon="groups">groups</span>
           </div>
           <div>
             <h5 className="mb-0" style={{ fontWeight: '700', color: 'white' }}>Parent Panel</h5>
@@ -74,55 +74,55 @@ const ParentSidebar = ({ onClose, handleLogout }) => {
       <Nav className="flex-column px-3">
         <LinkContainer to="/parent/dashboard" onClick={handleCloseSidebar}>
           <Nav.Link className="text-white">
-            <i className="fas fa-tachometer-alt me-2"></i>
+            <span className="material-symbols-rounded me-2" data-icon="dashboard">dashboard</span>
             Dashboard
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/parent/progress" onClick={handleCloseSidebar}>
           <Nav.Link className="text-white">
-            <i className="fas fa-chart-line me-2"></i>
+            <span className="material-symbols-rounded me-2" data-icon="show_chart">show_chart</span>
             Child Progress
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/parent/attendance" onClick={handleCloseSidebar}>
           <Nav.Link className="text-white">
-            <i className="fas fa-calendar-check me-2"></i>
+            <span className="material-symbols-rounded me-2" data-icon="event_available">event_available</span>
             Attendance
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/parent/timetable" onClick={handleCloseSidebar}>
           <Nav.Link className="text-white">
-            <i className="fas fa-table me-2"></i>
+            <span className="material-symbols-rounded me-2" data-icon="calendar_view_month">calendar_view_month</span>
             Timetable
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/parent/messages" onClick={handleCloseSidebar}>
           <Nav.Link className="text-white">
-            <i className="fas fa-envelope me-2"></i>
+            <span className="material-symbols-rounded me-2" data-icon="mail">mail</span>
             Messages
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/parent/announcements" onClick={handleCloseSidebar}>
           <Nav.Link className="text-white">
-            <i className="fas fa-bullhorn me-2"></i>
+            <span className="material-symbols-rounded me-2" data-icon="campaign">campaign</span>
             Announcements
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/parent/results" onClick={handleCloseSidebar}>
           <Nav.Link className="text-white">
-            <i className="fas fa-chart-bar me-2"></i>
+            <span className="material-symbols-rounded me-2" data-icon="analytics">analytics</span>
             Results
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/parent/fee-chalan" onClick={handleCloseSidebar}>
           <Nav.Link className="text-white">
-            <i className="fas fa-file-invoice-dollar me-2"></i>
+            <span className="material-symbols-rounded me-2" data-icon="request_quote">request_quote</span>
             Fee Chalan
           </Nav.Link>
         </LinkContainer>
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: '10px', paddingTop: '10px' }}>
           <Nav.Link className="text-white" onClick={handleLogoutClick} style={{ cursor: 'pointer' }}>
-            <i className="fas fa-sign-out-alt me-2"></i>
+            <span className="material-symbols-rounded me-2" data-icon="logout">logout</span>
             Logout
           </Nav.Link>
         </div>

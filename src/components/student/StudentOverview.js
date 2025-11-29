@@ -105,7 +105,7 @@ const StudentOverview = () => {
       <Row className="mb-4">
         <Col md={3}>
           <Card className="text-center card-enhanced" style={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'var(--gradient-primary)',
             color: 'white',
             border: 'none',
             boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
@@ -209,7 +209,7 @@ const StudentOverview = () => {
         <Col md={6}>
           <Card className="card-enhanced">
             <Card.Header style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'var(--gradient-primary)',
               color: 'white',
               border: 'none'
             }}>

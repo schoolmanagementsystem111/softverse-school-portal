@@ -8,7 +8,7 @@ import ModuleSidebar from '../common/ModuleSidebar';
 import FeeChalan from '../admin/FeeChalan';
 
 const gradientHeader = {
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  background: 'var(--gradient-primary)',
   color: 'white',
   border: 'none'
 };
@@ -263,11 +263,11 @@ const AccountsDashboard = () => {
         title="Accounts"
         onLogout={handleLogout}
         items={[
-          { key: 'overview', label: 'Overview', icon: 'fas fa-tachometer-alt', onClick: () => setActiveTab('overview') },
-          { key: 'transactions', label: 'Transactions', icon: 'fas fa-receipt', onClick: () => setActiveTab('transactions') },
-          { key: 'invoices', label: 'Invoices', icon: 'fas fa-file-invoice-dollar', onClick: () => setActiveTab('invoices') },
-          { key: 'feeChalan', label: 'Fee Chalan', icon: 'fas fa-file-invoice', onClick: () => setActiveTab('feeChalan') },
-          { key: 'reports', label: 'Reports', icon: 'fas fa-chart-line', onClick: () => setActiveTab('reports') }
+          { key: 'overview', label: 'Overview', icon: 'dashboard', onClick: () => setActiveTab('overview') },
+          { key: 'transactions', label: 'Transactions', icon: 'receipt_long', onClick: () => setActiveTab('transactions') },
+          { key: 'invoices', label: 'Invoices', icon: 'request_quote', onClick: () => setActiveTab('invoices') },
+          { key: 'feeChalan', label: 'Fee Chalan', icon: 'request_quote', onClick: () => setActiveTab('feeChalan') },
+          { key: 'reports', label: 'Reports', icon: 'insights', onClick: () => setActiveTab('reports') }
         ]}
       />)}
       <div className="flex-grow-1 d-flex flex-column container-enhanced">
@@ -575,7 +575,7 @@ const AccountsDashboard = () => {
               </Col>
               <Col md={3}>
                 <Card className="card-enhanced">
-                  <Card.Header style={{ background: reportData.netProfit >= 0 ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
+                  <Card.Header style={{ background: reportData.netProfit >= 0 ? 'var(--gradient-primary)' : 'linear-gradient(120deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
                     <strong>Net Profit</strong>
                   </Card.Header>
                   <Card.Body>

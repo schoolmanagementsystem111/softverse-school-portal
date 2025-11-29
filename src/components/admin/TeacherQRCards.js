@@ -142,13 +142,13 @@ const TeacherQRCards = () => {
             }
             .badge-role-badge {
               display: inline-block;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(120deg, #1a73e8 0%, #1557b0 100%);
               padding: 4px 16px;
               border-radius: 20px;
               font-size: 11px;
               font-weight: 600;
               letter-spacing: 1px;
-              box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+              box-shadow: 0 2px 8px rgba(26, 115, 232, 0.25);
             }
             .badge-content {
               flex: 1;
@@ -171,23 +171,23 @@ const TeacherQRCards = () => {
               height: 100px;
               border-radius: 50%;
               object-fit: cover;
-              border: 4px solid #667eea;
-              box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+              border: 4px solid var(--secondary-color);
+              box-shadow: 0 4px 12px rgba(26, 115, 232, 0.28);
               background: white;
             }
             .badge-photo-fallback {
               width: 100px;
               height: 100px;
               border-radius: 50%;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(120deg, #1a73e8 0%, #1557b0 100%);
               display: flex;
               align-items: center;
               justify-content: center;
               color: white;
               font-size: 36px;
               font-weight: 700;
-              border: 4px solid #667eea;
-              box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+              border: 4px solid var(--secondary-color);
+              box-shadow: 0 4px 12px rgba(26, 115, 232, 0.28);
             }
             .badge-name-section {
               text-align: center;
@@ -256,7 +256,7 @@ const TeacherQRCards = () => {
             }
             .badge-footer-line {
               height: 2px;
-              background: linear-gradient(90deg, transparent, #667eea, transparent);
+              background: linear-gradient(90deg, transparent, #1a73e8, transparent);
               border-radius: 2px;
             }
             @media print {
@@ -484,13 +484,13 @@ const TeacherQRCards = () => {
         
         .badge-role-badge {
           display: inline-block;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(120deg, #1a73e8 0%, #1557b0 100%);
           padding: 4px 16px;
           border-radius: 20px;
           font-size: 11px;
           font-weight: 600;
           letter-spacing: 1px;
-          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+          box-shadow: 0 2px 8px rgba(26, 115, 232, 0.25);
         }
         
         .badge-content {
@@ -517,8 +517,8 @@ const TeacherQRCards = () => {
           height: 100px;
           border-radius: 50%;
           object-fit: cover;
-          border: 4px solid #667eea;
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          border: 4px solid var(--secondary-color);
+          box-shadow: 0 4px 12px rgba(26, 115, 232, 0.28);
           background: white;
         }
         
@@ -526,15 +526,15 @@ const TeacherQRCards = () => {
           width: 100px;
           height: 100px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(120deg, #1a73e8 0%, #1557b0 100%);
           display: flex;
           align-items: center;
           justify-content: center;
           color: white;
           font-size: 36px;
           font-weight: 700;
-          border: 4px solid #667eea;
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          border: 4px solid var(--secondary-color);
+          box-shadow: 0 4px 12px rgba(26, 115, 232, 0.28);
         }
         
         .badge-name-section {
@@ -614,7 +614,7 @@ const TeacherQRCards = () => {
         
         .badge-footer-line {
           height: 2px;
-          background: linear-gradient(90deg, transparent, #667eea, transparent);
+          background: linear-gradient(90deg, transparent, #1a73e8, transparent);
           border-radius: 2px;
         }
         
@@ -626,8 +626,8 @@ const TeacherQRCards = () => {
           padding: 6px 12px;
           font-size: 12px;
           border-radius: 6px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          box-shadow: 0 2px 8px rgba(26, 115, 232, 0.22);
+          background: linear-gradient(120deg, #1a73e8 0%, #1557b0 100%);
           border: none;
           color: white;
           font-weight: 600;
@@ -636,8 +636,8 @@ const TeacherQRCards = () => {
         
         .badge-print-btn:hover {
           transform: scale(1.05);
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-          background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+          box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+          background: linear-gradient(120deg, #1557b0 0%, #1a73e8 100%);
         }
         
         @media print {

@@ -244,29 +244,47 @@ const ClassAttendance = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {students.map(student => (
-                    <tr key={student.id}>
-                      <td>{student.rollNumber || '-'}</td>
-                      <td>{student.name}</td>
-                      <td>
-                        <Badge bg={attendanceRecords[student.id] === 'present' ? 'success' : 'danger'}>
-                          {attendanceRecords[student.id]}
-                        </Badge>
-                      </td>
-                      <td>
-                        <Button
-                          variant={attendanceRecords[student.id] === 'present' ? 'outline-danger' : 'outline-success'}
-                          size="sm"
-                          onClick={() => handleAttendanceChange(
-                            student.id, 
-                            attendanceRecords[student.id] === 'present' ? 'absent' : 'present'
-                          )}
-                        >
-                          {attendanceRecords[student.id] === 'present' ? 'Mark Absent' : 'Mark Present'}
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {students.map(student => {
+                    const status = attendanceRecords[student.id] || 'present';
+                    const badgeVariant = status === 'present' ? 'success' : (status === 'absent' ? 'danger' : 'warning');
+                    const displayStatus = status === 'leave' ? 'on leave' : status;
+                    return (
+                      <tr key={student.id}>
+                        <td>{student.rollNumber || '-'}</td>
+                        <td>{student.name}</td>
+                        <td>
+                          <Badge bg={badgeVariant}>
+                            {displayStatus}
+                          </Badge>
+                        </td>
+                        <td>
+                          <div className="d-flex gap-2">
+                            <Button
+                              variant="outline-success"
+                              size="sm"
+                              onClick={() => handleAttendanceChange(student.id, 'present')}
+                            >
+                              Mark Present
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => handleAttendanceChange(student.id, 'absent')}
+                            >
+                              Mark Absent
+                            </Button>
+                            <Button
+                              variant="outline-warning"
+                              size="sm"
+                              onClick={() => handleAttendanceChange(student.id, 'leave')}
+                            >
+                              Mark On Leave
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </Table>
             </Card.Body>

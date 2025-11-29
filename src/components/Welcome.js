@@ -40,7 +40,7 @@ const Welcome = () => {
                 </p>
               </Card.Header>
               <Card.Body className="p-4 p-md-5">
-                <p className="lead mb-4" style={{ color: '#64748b', fontWeight: 500 }}>
+                <p className="lead mb-4" style={{ color: 'var(--color-muted)', fontWeight: 500 }}>
                   A comprehensive school management system for administrators, teachers, parents, and students.
                 </p>
                 
@@ -48,7 +48,7 @@ const Welcome = () => {
                   <Col xs={12} sm={6} md={6} lg={3} className="mb-4 mb-lg-0">
                     <div className="role-card shadow-sm">
                       <i className="fas fa-crown"></i>
-                      <h4 style={{ color: '#667eea', fontWeight: 700, whiteSpace: 'nowrap' }}>Admin</h4>
+                      <h4 style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Admin</h4>
                       <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
                         Manage users, classes, and school operations
                       </p>
@@ -57,7 +57,7 @@ const Welcome = () => {
                   <Col xs={12} sm={6} md={6} lg={3} className="mb-4 mb-lg-0">
                     <div className="role-card shadow-sm">
                       <i className="fas fa-chalkboard-teacher"></i>
-                      <h4 style={{ color: '#667eea', fontWeight: 700, whiteSpace: 'nowrap' }}>Teacher</h4>
+                      <h4 style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Teacher</h4>
                       <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
                         Mark attendance, upload grades, and communicate
                       </p>
@@ -66,7 +66,7 @@ const Welcome = () => {
                   <Col xs={12} sm={6} md={6} lg={3} className="mb-4 mb-lg-0">
                     <div className="role-card shadow-sm">
                       <i className="fas fa-users"></i>
-                      <h4 style={{ color: '#667eea', fontWeight: 700, whiteSpace: 'nowrap' }}>Parent</h4>
+                      <h4 style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Parent</h4>
                       <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
                         Monitor child's progress and communicate with teachers
                       </p>
@@ -75,7 +75,7 @@ const Welcome = () => {
                   <Col xs={12} sm={6} md={6} lg={3} className="mb-4 mb-lg-0">
                     <div className="role-card shadow-sm">
                       <i className="fas fa-user-graduate"></i>
-                      <h4 style={{ color: '#667eea', fontWeight: 700, whiteSpace: 'nowrap' }}>Student</h4>
+                      <h4 style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Student</h4>
                       <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
                         View grades, attendance, and study materials
                       </p>
@@ -87,7 +87,7 @@ const Welcome = () => {
                   <Col xs={12} sm={6} md={6} lg={3} className="mb-4 mb-lg-0">
                     <div className="role-card shadow-sm">
                       <i className="fas fa-bus"></i>
-                      <h4 style={{ color: '#667eea', fontWeight: 700, whiteSpace: 'nowrap' }}>Transport</h4>
+                      <h4 style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Transport</h4>
                       <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
                         Manage vehicles, drivers, routes and student assignments
                       </p>
@@ -96,7 +96,7 @@ const Welcome = () => {
                   <Col xs={12} sm={6} md={6} lg={3} className="mb-4 mb-lg-0">
                     <div className="role-card shadow-sm">
                       <i className="fas fa-book"></i>
-                      <h4 style={{ color: '#667eea', fontWeight: 700, whiteSpace: 'nowrap' }}>Library</h4>
+                      <h4 style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Library</h4>
                       <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
                         Catalog books, issue and return records for students
                       </p>
@@ -105,7 +105,7 @@ const Welcome = () => {
                   <Col xs={12} sm={6} md={6} lg={3} className="mb-4 mb-lg-0">
                     <div className="role-card shadow-sm">
                       <i className="fas fa-calculator"></i>
-                      <h4 style={{ color: '#667eea', fontWeight: 700, whiteSpace: 'nowrap' }}>Accounts</h4>
+                      <h4 style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Accounts</h4>
                       <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
                         Track transactions and create invoices for students
                       </p>
@@ -114,7 +114,7 @@ const Welcome = () => {
                   <Col xs={12} sm={6} md={6} lg={3} className="mb-4 mb-lg-0">
                     <div className="role-card shadow-sm">
                       <i className="fas fa-hotel"></i>
-                      <h4 style={{ color: '#667eea', fontWeight: 700, whiteSpace: 'nowrap' }}>Hostel</h4>
+                      <h4 style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Hostel</h4>
                       <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
                         Manage rooms, resident allocations and hostel payments
                       </p>
@@ -123,7 +123,7 @@ const Welcome = () => {
                   <Col xs={12} sm={6} md={6} lg={3} className="mb-4 mb-lg-0">
                     <div className="role-card shadow-sm">
                       <i className="fas fa-hotel"></i>
-                      <h4 style={{ color: '#667eea', fontWeight: 700, whiteSpace: 'nowrap' }}>Cafeteria</h4>
+                      <h4 style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Cafeteria</h4>
                       <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
                         Manage meals, orders and payments
                       </p>

@@ -11,6 +11,7 @@ const TeacherQRScan = () => {
   const canvasRef = useRef(null);
   const mediaStreamRef = useRef(null);
   const scanIntervalRef = useRef(null);
+  const hasProcessedRef = useRef(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [isActive, setIsActive] = useState(false);
@@ -23,6 +24,7 @@ const TeacherQRScan = () => {
   }, []);
 
   const start = async () => {
+    hasProcessedRef.current = false;
     setIsActive(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -53,6 +55,7 @@ const TeacherQRScan = () => {
   };
 
   const scanFrame = async () => {
+    if (hasProcessedRef.current) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
@@ -66,6 +69,9 @@ const TeacherQRScan = () => {
     const imageData = ctx.getImageData(0, 0, width, height);
     const code = jsQR(imageData.data, imageData.width, imageData.height);
     if (code && code.data) {
+      // Stop scanning immediately to avoid double-processing the same QR
+      hasProcessedRef.current = true;
+      stop();
       await handleQr(code.data);
     }
   };

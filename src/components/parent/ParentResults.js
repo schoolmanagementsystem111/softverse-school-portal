@@ -283,7 +283,7 @@ const ParentResults = () => {
           .grade-d { background: #e74c3c; color: white; }
           .grade-f { background: #c0392b; color: white; }
           .overall-grade {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(120deg, #1a73e8 0%, #1557b0 100%);
             color: white;
             padding: 15px;
             border-radius: 10px;
@@ -427,7 +427,7 @@ const ParentResults = () => {
         <Col md={4}>
           <Card className="card-enhanced">
             <Card.Header style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'var(--gradient-primary)',
               color: 'white',
               border: 'none'
             }}>

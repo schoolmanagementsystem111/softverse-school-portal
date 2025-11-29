@@ -15,6 +15,7 @@ import LibraryDashboard from './components/library/LibraryDashboard';
 import AccountsDashboard from './components/accounts/AccountsDashboard';
 import HostelDashboard from './components/hostel/HostelDashboard';
 import CafeteriaDashboard from './components/cafeteria/CafeteriaDashboard';
+import SuperAdminDashboard from './components/superadmin/SuperAdminDashboard';
 
 function App() {
   return (
@@ -24,6 +25,14 @@ function App() {
           <Routes>
             <Route path="/" element={<Welcome />} />
             <Route path="/login" element={<Auth />} />
+            <Route 
+              path="/super-admin/*" 
+              element={
+                <ProtectedRoute requiredRole="superadmin">
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/admin/*" 
               element={

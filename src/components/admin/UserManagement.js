@@ -7,7 +7,7 @@ import { initializeApp, deleteApp, getApps } from 'firebase/app';
 import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
 import app, { auth, db } from '../../firebase/config';
 
-const UserManagement = () => {
+const UserManagement = ({ includeAdminRoles = false }) => {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -328,6 +328,16 @@ const UserManagement = () => {
       </div>
 
       <Tabs defaultActiveKey="students" className="mb-3">
+        {includeAdminRoles && (
+          <Tab eventKey="admins" title={`Admins (${getUsersByRole('admin').length})`}>
+            <UserTable 
+              users={getUsersByRole('admin')} 
+              onEdit={handleEdit} 
+              onDelete={handleDelete}
+              role="admin"
+            />
+          </Tab>
+        )}
         <Tab eventKey="students" title={`Students (${getUsersByRole('student').length})`}>
           <UserTable 
             users={getUsersByRole('student')} 
@@ -445,6 +455,7 @@ const UserManagement = () => {
                     value={formData.role}
                     onChange={(e) => setFormData({...formData, role: e.target.value})}
                   >
+                    {includeAdminRoles && <option value="admin">Admin</option>}
                     <option value="student">Student</option>
                     <option value="teacher">Teacher</option>
                     <option value="parent">Parent</option>
@@ -601,7 +612,7 @@ const UserManagement = () => {
                           maxHeight: '150px', 
                           borderRadius: '8px',
                           objectFit: 'cover',
-                          border: '2px solid #667eea'
+                          border: '2px solid var(--secondary-color)'
                         }} 
                       />
                     </div>

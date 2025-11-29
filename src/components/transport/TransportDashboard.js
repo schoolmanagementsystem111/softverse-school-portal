@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import ModuleSidebar from '../common/ModuleSidebar';
 
 const gradientHeader = {
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  background: 'var(--gradient-primary)',
   color: 'white',
   border: 'none'
 };
@@ -436,14 +436,14 @@ const TransportDashboard = () => {
         title="Transport"
         onLogout={handleLogout}
         items={[
-          { key: 'overview', label: 'Overview', icon: 'fas fa-tachometer-alt', onClick: () => setActiveTab('overview') },
-          { key: 'vehicles', label: 'Vehicles', icon: 'fas fa-truck', onClick: () => setActiveTab('vehicles') },
-          { key: 'drivers', label: 'Drivers', icon: 'fas fa-id-badge', onClick: () => setActiveTab('drivers') },
-          { key: 'routes', label: 'Routes', icon: 'fas fa-route', onClick: () => setActiveTab('routes') },
-          { key: 'assignments', label: 'Assignments', icon: 'fas fa-user-tag', onClick: () => setActiveTab('assignments') },
-          { key: 'trips', label: 'Trips', icon: 'fas fa-clock', onClick: () => setActiveTab('trips') },
-          { key: 'payments', label: 'Payments', icon: 'fas fa-wallet', onClick: () => setActiveTab('payments') },
-          { key: 'reports', label: 'Reports', icon: 'fas fa-chart-line', onClick: () => setActiveTab('reports') }
+          { key: 'overview', label: 'Overview', icon: 'dashboard', onClick: () => setActiveTab('overview') },
+          { key: 'vehicles', label: 'Vehicles', icon: 'local_shipping', onClick: () => setActiveTab('vehicles') },
+          { key: 'drivers', label: 'Drivers', icon: 'badge', onClick: () => setActiveTab('drivers') },
+          { key: 'routes', label: 'Routes', icon: 'alt_route', onClick: () => setActiveTab('routes') },
+          { key: 'assignments', label: 'Assignments', icon: 'assignment_ind', onClick: () => setActiveTab('assignments') },
+          { key: 'trips', label: 'Trips', icon: 'schedule', onClick: () => setActiveTab('trips') },
+          { key: 'payments', label: 'Payments', icon: 'account_balance_wallet', onClick: () => setActiveTab('payments') },
+          { key: 'reports', label: 'Reports', icon: 'insights', onClick: () => setActiveTab('reports') }
         ]}
       />)}
       <div className="flex-grow-1 d-flex flex-column container-enhanced">
@@ -1104,7 +1104,7 @@ const TransportDashboard = () => {
             </Col>
             <Col md={3}>
               <Card className="card-enhanced">
-                <Card.Header style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+                <Card.Header style={{ background: 'var(--gradient-primary)', color: 'white' }}>
                   <strong>Active Vehicles</strong>
                 </Card.Header>
                 <Card.Body>

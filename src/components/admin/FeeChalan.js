@@ -17,13 +17,28 @@ const FeeChalan = () => {
   const [activeTab, setActiveTab] = useState('generate');
   const [classFeeAmounts, setClassFeeAmounts] = useState({}); // { classId: { monthlyTuition, examinationFee, ... } }
   const [editingClassFee, setEditingClassFee] = useState(null); // Currently editing class fee
+  const [standardFees, setStandardFees] = useState(null); // Standard fees for whole school
   const [feeAmountForm, setFeeAmountForm] = useState({
     monthlyTuition: 5000,
     examinationFee: 2000,
     libraryFee: 500,
     sportsFee: 1000,
     transportFee: 3000,
-    otherFees: 0
+    otherFees: 0,
+    finePercentage: 0,
+    fineDate: null,
+    discount: 0
+  });
+  const [standardFeeForm, setStandardFeeForm] = useState({
+    monthlyTuition: 5000,
+    examinationFee: 2000,
+    libraryFee: 500,
+    sportsFee: 1000,
+    transportFee: 3000,
+    otherFees: 0,
+    finePercentage: 0,
+    fineDate: null,
+    discount: 0
   });
   const [feeData, setFeeData] = useState({
     monthlyTuition: 5000,
@@ -45,14 +60,24 @@ const FeeChalan = () => {
     paymentMethod: 'cash',
     referenceNo: '',
     paidDate: new Date().toISOString().split('T')[0],
-    remarks: ''
+    remarks: '',
+    fine: 0,
+    discount: 0,
+    paidAmount: 0,
+    dueAmount: 0
   });
+  const [showFeeSourceModal, setShowFeeSourceModal] = useState(false);
+  const [pendingGenerationType, setPendingGenerationType] = useState(null); // 'class' or 'all'
+  const [selectedFeeSource, setSelectedFeeSource] = useState('class'); // 'standard' or 'class'
+  const [showPaymentHistoryModal, setShowPaymentHistoryModal] = useState(false);
+  const [selectedChalanForHistory, setSelectedChalanForHistory] = useState(null);
 
   useEffect(() => {
     fetchClasses();
     fetchSchoolProfile();
     fetchSavedChalans();
     fetchClassFeeAmounts();
+    fetchStandardFees();
   }, []);
 
   useEffect(() => {
@@ -130,6 +155,61 @@ const FeeChalan = () => {
     }
   };
 
+  const fetchStandardFees = async () => {
+    try {
+      const standardFeesRef = doc(db, 'standardFees', 'main');
+      const standardFeesSnap = await getDoc(standardFeesRef);
+      if (standardFeesSnap.exists()) {
+        const data = standardFeesSnap.data();
+        setStandardFees(data);
+        setStandardFeeForm({
+          monthlyTuition: data.monthlyTuition || 5000,
+          examinationFee: data.examinationFee || 2000,
+          libraryFee: data.libraryFee || 500,
+          sportsFee: data.sportsFee || 1000,
+          transportFee: data.transportFee || 3000,
+          otherFees: data.otherFees || 0,
+          finePercentage: data.finePercentage || 0,
+          fineDate: data.fineDate || null,
+          discount: data.discount || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching standard fees:', error);
+    }
+  };
+
+  const saveStandardFees = async () => {
+    try {
+      setLoading(true);
+      const standardFeeData = {
+        monthlyTuition: standardFeeForm.monthlyTuition || 0,
+        examinationFee: standardFeeForm.examinationFee || 0,
+        libraryFee: standardFeeForm.libraryFee || 0,
+        sportsFee: standardFeeForm.sportsFee || 0,
+        transportFee: standardFeeForm.transportFee || 0,
+        otherFees: standardFeeForm.otherFees || 0,
+        finePercentage: standardFeeForm.finePercentage || 0,
+        fineDate: standardFeeForm.fineDate || null,
+        discount: standardFeeForm.discount || 0,
+        updatedAt: new Date()
+      };
+
+      const standardFeesRef = doc(db, 'standardFees', 'main');
+      await setDoc(standardFeesRef, standardFeeData, { merge: true });
+
+      setStandardFees(standardFeeData);
+      setMessage('Standard fees saved successfully! These will apply to all students automatically.');
+      setMessageType('success');
+    } catch (error) {
+      console.error('Error saving standard fees:', error);
+      setMessage('Error saving standard fees. Please try again.');
+      setMessageType('danger');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const saveClassFeeAmount = async (classId) => {
     try {
       setLoading(true);
@@ -141,6 +221,9 @@ const FeeChalan = () => {
         sportsFee: feeAmountForm.sportsFee || 0,
         transportFee: feeAmountForm.transportFee || 0,
         otherFees: feeAmountForm.otherFees || 0,
+        finePercentage: feeAmountForm.finePercentage || 0,
+        fineDate: feeAmountForm.fineDate || null,
+        discount: feeAmountForm.discount || 0,
         updatedAt: new Date()
       };
 
@@ -175,7 +258,10 @@ const FeeChalan = () => {
         libraryFee: existingFee.libraryFee || 500,
         sportsFee: existingFee.sportsFee || 1000,
         transportFee: existingFee.transportFee || 3000,
-        otherFees: existingFee.otherFees || 0
+        otherFees: existingFee.otherFees || 0,
+        finePercentage: existingFee.finePercentage || 0,
+        fineDate: existingFee.fineDate || null,
+        discount: existingFee.discount || 0
       });
     } else {
       setFeeAmountForm({
@@ -184,7 +270,10 @@ const FeeChalan = () => {
         libraryFee: 500,
         sportsFee: 1000,
         transportFee: 3000,
-        otherFees: 0
+        otherFees: 0,
+        finePercentage: 0,
+        fineDate: null,
+        discount: 0
       });
     }
     setEditingClassFee(classId);
@@ -204,7 +293,18 @@ const FeeChalan = () => {
         otherFees: savedAmounts.otherFees ?? 0
       };
     }
-    // Return default if no saved amounts
+    // If no class-specific fees, use standard fees if available
+    if (standardFees) {
+      return {
+        monthlyTuition: standardFees.monthlyTuition ?? 5000,
+        examinationFee: standardFees.examinationFee ?? 2000,
+        libraryFee: standardFees.libraryFee ?? 500,
+        sportsFee: standardFees.sportsFee ?? 1000,
+        transportFee: standardFees.transportFee ?? 3000,
+        otherFees: standardFees.otherFees ?? 0
+      };
+    }
+    // Return default if no saved amounts and no standard fees
     return {
       monthlyTuition: 5000,
       examinationFee: 2000,
@@ -269,6 +369,14 @@ const FeeChalan = () => {
         },
         remarks: feeData.remarks || null,
         status: 'pending',
+        totalPaidAmount: 0,
+        totalDueAmount: (Number(feeData.monthlyTuition) || 0) + 
+                        (Number(feeData.examinationFee) || 0) + 
+                        (Number(feeData.libraryFee) || 0) + 
+                        (Number(feeData.sportsFee) || 0) + 
+                        (Number(feeData.transportFee) || 0) + 
+                        (Number(feeData.otherFees) || 0),
+        paymentHistory: [],
         createdAt: new Date(),
         createdBy: 'admin'
       };
@@ -282,7 +390,7 @@ const FeeChalan = () => {
     }
   };
 
-  const generateFeeChalan = async (student, customFeeData = null) => {
+  const generateFeeChalan = async (student, customFeeData = null, useStandardFee = false) => {
     const currentDate = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -294,18 +402,32 @@ const FeeChalan = () => {
     if (customFeeData) {
       fees = customFeeData;
     } else {
-      // Get class-specific fee amounts from configuration
-      const classFees = getClassFeeAmounts(student.classId);
+      // Determine which fee source to use
+      let feeAmounts;
+      if (useStandardFee && standardFees) {
+        // Use standard fees for whole school
+        feeAmounts = {
+          monthlyTuition: standardFees.monthlyTuition ?? 5000,
+          examinationFee: standardFees.examinationFee ?? 2000,
+          libraryFee: standardFees.libraryFee ?? 500,
+          sportsFee: standardFees.sportsFee ?? 1000,
+          transportFee: standardFees.transportFee ?? 3000,
+          otherFees: standardFees.otherFees ?? 0
+        };
+      } else {
+        // Get class-specific fee amounts from configuration
+        feeAmounts = getClassFeeAmounts(student.classId);
+      }
       
-      // Build fees object: use class fees for amounts, keep other fields from feeData
+      // Build fees object: use selected fee amounts, keep other fields from feeData
       fees = {
-        // Use class fee amounts (these take priority)
-        monthlyTuition: classFees.monthlyTuition,
-        examinationFee: classFees.examinationFee,
-        libraryFee: classFees.libraryFee,
-        sportsFee: classFees.sportsFee,
-        transportFee: classFees.transportFee,
-        otherFees: classFees.otherFees,
+        // Use selected fee amounts
+        monthlyTuition: feeAmounts.monthlyTuition,
+        examinationFee: feeAmounts.examinationFee,
+        libraryFee: feeAmounts.libraryFee,
+        sportsFee: feeAmounts.sportsFee,
+        transportFee: feeAmounts.transportFee,
+        otherFees: feeAmounts.otherFees,
         // Keep other fields from feeData
         otherFeeDescription: feeData.otherFeeDescription || null,
         remarks: feeData.remarks || null,
@@ -673,19 +795,34 @@ const FeeChalan = () => {
       return;
     }
 
+    // Show fee source selection modal
+    setPendingGenerationType('class');
+    setShowFeeSourceModal(true);
+  };
+
+  const proceedWithClassGeneration = async () => {
+    setShowFeeSourceModal(false);
+    const useStandardFee = selectedFeeSource === 'standard';
+
+    if (students.length === 0) {
+      setMessage('No students found for the selected class');
+      setMessageType('warning');
+      return;
+    }
+
     try {
       for (let i = 0; i < students.length; i++) {
         const student = students[i];
         setTimeout(async () => {
           try {
-            await generateFeeChalan(student);
+            await generateFeeChalan(student, null, useStandardFee);
           } catch (error) {
             console.error(`Error generating chalan for ${student.name}:`, error);
           }
         }, i * 2000); // Delay each print by 2 seconds
       }
 
-      setMessage(`Fee chalans generation initiated for ${students.length} students`);
+      setMessage(`Fee chalans generation initiated for ${students.length} students using ${useStandardFee ? 'Standard Fee' : 'Class-specific fees'}`);
       setMessageType('success');
     } catch (error) {
       console.error('Error in bulk chalan generation:', error);
@@ -695,7 +832,16 @@ const FeeChalan = () => {
   };
 
   const generateAllStudentsFeeChalans = async () => {
+    // Show fee source selection modal
+    setPendingGenerationType('all');
+    setShowFeeSourceModal(true);
+  };
+
+  const proceedWithAllStudentsGeneration = async () => {
+    setShowFeeSourceModal(false);
     setLoading(true);
+    const useStandardFee = selectedFeeSource === 'standard';
+
     try {
       // Fetch all students across all classes
       const allStudentsQuery = query(collection(db, 'users'), where('role', '==', 'student'));
@@ -709,26 +855,28 @@ const FeeChalan = () => {
         return;
       }
 
-      // Check if fee amounts are configured for all classes
-      const studentsWithoutFeeConfig = allStudentsList.filter(student => {
-        return !classFeeAmounts[student.classId];
-      });
+      // If using class-specific fees, check if fee amounts are configured for all classes
+      if (!useStandardFee) {
+        const studentsWithoutFeeConfig = allStudentsList.filter(student => {
+          return !classFeeAmounts[student.classId];
+        });
 
-      if (studentsWithoutFeeConfig.length > 0) {
-        const uniqueClassesWithoutConfig = [...new Set(studentsWithoutFeeConfig.map(s => s.classId))];
-        const classesNames = uniqueClassesWithoutConfig.map(cid => getClassName(cid)).join(', ');
-        const confirmed = window.confirm(
-          `Warning: ${studentsWithoutFeeConfig.length} students from ${uniqueClassesWithoutConfig.length} class(es) do not have fee amounts configured. ` +
-          `Classes: ${classesNames}\n\n` +
-          `These students will use default fee amounts. Do you want to continue?`
-        );
-        if (!confirmed) {
-          setLoading(false);
-          return;
+        if (studentsWithoutFeeConfig.length > 0) {
+          const uniqueClassesWithoutConfig = [...new Set(studentsWithoutFeeConfig.map(s => s.classId))];
+          const classesNames = uniqueClassesWithoutConfig.map(cid => getClassName(cid)).join(', ');
+          const confirmed = window.confirm(
+            `Warning: ${studentsWithoutFeeConfig.length} students from ${uniqueClassesWithoutConfig.length} class(es) do not have fee amounts configured. ` +
+            `Classes: ${classesNames}\n\n` +
+            `These students will use standard fees or default amounts. Do you want to continue?`
+          );
+          if (!confirmed) {
+            setLoading(false);
+            return;
+          }
         }
       }
 
-      setMessage(`Starting fee chalan generation for ${allStudentsList.length} students...`);
+      setMessage(`Starting fee chalan generation for ${allStudentsList.length} students using ${useStandardFee ? 'Standard Fee' : 'Class-specific fees'}...`);
       setMessageType('info');
 
       let successCount = 0;
@@ -739,7 +887,7 @@ const FeeChalan = () => {
         const student = allStudentsList[i];
         setTimeout(async () => {
           try {
-            await generateFeeChalan(student); // This will use class-specific fee amounts from getClassFeeAmounts
+            await generateFeeChalan(student, null, useStandardFee);
             successCount++;
             
             // Update message periodically
@@ -776,6 +924,7 @@ const FeeChalan = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'paid': return 'success';
+      case 'partial': return 'info';
       case 'pending': return 'warning';
       case 'overdue': return 'danger';
       default: return 'secondary';
@@ -802,15 +951,84 @@ const FeeChalan = () => {
     }
   };
 
+  const calculateFine = (chalan, paidDate) => {
+    // Check if payment is after due date
+    if (!chalan.dueDate) {
+      return 0; // No due date, no fine
+    }
+
+    const dueDate = new Date(chalan.dueDate);
+    dueDate.setHours(23, 59, 59, 999); // Set to end of due date
+    
+    // Check if any existing payment was made before or on due date
+    // If any payment was made before due date, no fine should be applied
+    const existingHistory = chalan.paymentHistory || [];
+    if (existingHistory.length > 0) {
+      const hasPaymentBeforeDueDate = existingHistory.some(payment => {
+        if (!payment.paidDate) return false;
+        const paymentDate = new Date(payment.paidDate);
+        paymentDate.setHours(0, 0, 0, 0);
+        const dueDateStart = new Date(chalan.dueDate);
+        dueDateStart.setHours(0, 0, 0, 0);
+        return paymentDate <= dueDateStart;
+      });
+      
+      if (hasPaymentBeforeDueDate) {
+        return 0; // Payment was made before due date, no fine
+      }
+    }
+    
+    const paymentDate = new Date(paidDate);
+    
+    // Check if current payment date is after due date
+    if (paymentDate <= dueDate) {
+      return 0; // Payment on or before due date, no fine
+    }
+
+    // Get fine percentage - prefer class-specific, fall back to standard fees
+    let finePercentage = 0;
+    const classFeeData = classFeeAmounts[chalan.classId];
+    
+    if (classFeeData && classFeeData.finePercentage && classFeeData.finePercentage > 0) {
+      finePercentage = classFeeData.finePercentage;
+    } else if (standardFees && standardFees.finePercentage && standardFees.finePercentage > 0) {
+      finePercentage = standardFees.finePercentage;
+    }
+
+    if (finePercentage <= 0) {
+      return 0; // No fine percentage configured
+    }
+
+    // Calculate fine based on percentage
+    const totalAmount = Number(chalan?.fees?.totalAmount || 0);
+    const calculatedFine = (totalAmount * finePercentage) / 100;
+    
+    return Math.round(calculatedFine * 100) / 100; // Round to 2 decimal places
+  };
+
   const openPayModal = (chalan) => {
     setPayingChalan(chalan);
     const total = Number(chalan?.fees?.totalAmount || 0);
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Calculate fine if payment is after due date
+    const calculatedFine = calculateFine(chalan, today);
+    
+    // Get existing payment history to calculate remaining due
+    const existingPaidAmount = chalan.totalPaidAmount || 0;
+    const totalWithFine = total + calculatedFine;
+    const remainingDue = Math.max(0, totalWithFine - existingPaidAmount);
+    
     setPaymentForm({
-      amountReceived: total,
+      amountReceived: total + calculatedFine,
       paymentMethod: 'cash',
       referenceNo: '',
-      paidDate: new Date().toISOString().split('T')[0],
-      remarks: ''
+      paidDate: today,
+      remarks: '',
+      fine: calculatedFine,
+      discount: 0,
+      paidAmount: 0,
+      dueAmount: remainingDue
     });
     setShowPayModal(true);
   };
@@ -819,20 +1037,84 @@ const FeeChalan = () => {
     if (!payingChalan) return;
     try {
       const chalanRef = doc(db, 'feeChalans', payingChalan.id);
+      const chalanDoc = await getDoc(chalanRef);
+      const chalanData = chalanDoc.data();
+      
+      const totalAmount = Number(payingChalan?.fees?.totalAmount || 0);
+      
+      // Recalculate fine based on actual paid date to ensure accuracy
+      // This ensures that if payment is made before due date, fine is 0
+      // Use fresh chalan data from database to check existing payment history
+      const paidDate = paymentForm.paidDate || new Date().toISOString().split('T')[0];
+      const chalanWithHistory = {
+        ...chalanData,
+        id: payingChalan.id,
+        fees: payingChalan.fees,
+        dueDate: payingChalan.dueDate,
+        classId: payingChalan.classId
+      };
+      const recalculatedFine = calculateFine(chalanWithHistory, paidDate);
+      const fineAmount = recalculatedFine; // Use recalculated fine instead of form value
+      
+      const discountAmount = Number(paymentForm.discount) || 0;
+      const paidAmount = Number(paymentForm.paidAmount) || 0;
+      const totalWithFine = totalAmount + fineAmount - discountAmount;
+      
+      // Get existing payment history
+      const existingHistory = chalanData.paymentHistory || [];
+      const existingPaidAmount = chalanData.totalPaidAmount || 0;
+      
+      // Calculate new totals
+      const newPaidAmount = existingPaidAmount + paidAmount;
+      const newDueAmount = Math.max(0, totalWithFine - newPaidAmount);
+      
+      // Create payment record
+      const paymentRecord = {
+        paidAmount: paidAmount,
+        dueAmount: newDueAmount,
+        fine: fineAmount,
+        discount: discountAmount,
+        paymentMethod: paymentForm.paymentMethod || 'cash',
+        referenceNo: paymentForm.referenceNo || null,
+        paidDate: paymentForm.paidDate || null,
+        remarks: paymentForm.remarks || null,
+        recordedAt: new Date(),
+        totalWithFine: totalWithFine
+      };
+      
+      // Add to history
+      const updatedHistory = [...existingHistory, paymentRecord];
+      
+      // Determine status
+      let newStatus = 'pending';
+      if (newDueAmount <= 0) {
+        newStatus = 'paid';
+      } else if (newPaidAmount > 0) {
+        newStatus = 'partial';
+      }
+      
       await updateDoc(chalanRef, {
-        status: 'paid',
+        status: newStatus,
         updatedAt: new Date(),
+        totalPaidAmount: newPaidAmount,
+        totalDueAmount: newDueAmount,
+        paymentHistory: updatedHistory,
+        // Keep latest payment info for backward compatibility
         payment: {
-          amountReceived: Number(paymentForm.amountReceived) || 0,
+          amountReceived: paidAmount,
           paymentMethod: paymentForm.paymentMethod || 'cash',
           referenceNo: paymentForm.referenceNo || null,
           paidDate: paymentForm.paidDate || null,
-          remarks: paymentForm.remarks || null
+          remarks: paymentForm.remarks || null,
+          fine: fineAmount,
+          discount: discountAmount,
+          totalWithFine: totalWithFine
         },
-        paidAt: new Date()
+        paidAt: newStatus === 'paid' ? new Date() : (chalanData.paidAt || null)
       });
+      
       setShowPayModal(false);
-      setMessage('Chalan paid successfully.');
+      setMessage(newStatus === 'paid' ? 'Chalan paid successfully.' : `Payment recorded. Remaining due: PKR ${newDueAmount.toLocaleString()}`);
       setMessageType('success');
       await fetchSavedChalans();
     } catch (e) {
@@ -893,12 +1175,17 @@ const FeeChalan = () => {
               <tr><td>Sports Fee</td><td>${(fees.sportsFee||0).toLocaleString()}</td></tr>
               <tr><td>Transport Fee</td><td>${(fees.transportFee||0).toLocaleString()}</td></tr>
               ${fees.otherFees>0?`<tr><td>${fees.otherFeeDescription||'Other Fees'}</td><td>${fees.otherFees.toLocaleString()}</td></tr>`:''}
-              <tr class="total"><td>Total</td><td>${(totalAmount).toLocaleString()}</td></tr>
+              <tr class="total"><td>Total Fee</td><td>${(totalAmount).toLocaleString()}</td></tr>
+              ${(Number(payment.fine)||0) > 0 ? `<tr><td>Fine</td><td>${(Number(payment.fine)||0).toLocaleString()}</td></tr>` : ''}
+              ${(Number(payment.discount)||0) > 0 ? `<tr><td style="color:#28a745;">Discount</td><td style="color:#28a745;">-${(Number(payment.discount)||0).toLocaleString()}</td></tr>` : ''}
+              ${((Number(payment.fine)||0) > 0 || (Number(payment.discount)||0) > 0) ? `<tr class="total"><td>Total Amount (Fee + Fine - Discount)</td><td>${((totalAmount) + (Number(payment.fine)||0) - (Number(payment.discount)||0)).toLocaleString()}</td></tr>` : ''}
             </tbody>
           </table>
         </div>
         <div class="section">
           <div class="row"><span class="label">Amount Received:</span><span>PKR ${(Number(payment.amountReceived)||0).toLocaleString()}</span></div>
+          ${(Number(payment.fine)||0) > 0 ? `<div class="row"><span class="label">Fine:</span><span>PKR ${(Number(payment.fine)||0).toLocaleString()}</span></div>` : ''}
+          ${(Number(payment.discount)||0) > 0 ? `<div class="row"><span class="label" style="color:#28a745;">Discount:</span><span style="color:#28a745;">PKR ${(Number(payment.discount)||0).toLocaleString()}</span></div>` : ''}
           <div class="row"><span class="label">Payment Method:</span><span>${payment.paymentMethod || 'cash'}</span></div>
           <div class="row"><span class="label">Reference #:</span><span>${payment.referenceNo || '-'}</span></div>
           <div class="row"><span class="label">Paid Date:</span><span>${payment.paidDate ? new Date(payment.paidDate).toLocaleDateString() : (chalan.paidAt?.toDate ? chalan.paidAt.toDate().toLocaleDateString() : '')}</span></div>
@@ -1311,7 +1598,7 @@ const FeeChalan = () => {
             <Col md={6}>
               <Card className="card-enhanced">
                 <Card.Header style={{ 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'var(--gradient-primary)',
                   color: 'white',
                   border: 'none'
                 }}>
@@ -1512,6 +1799,8 @@ const FeeChalan = () => {
                       <th>Class</th>
                       <th>Chalan Number</th>
                       <th>Total Amount</th>
+                      <th>Paid Amount</th>
+                      <th>Due Amount</th>
                       <th>Due Date</th>
                       <th>Status</th>
                       <th>Created Date</th>
@@ -1547,6 +1836,16 @@ const FeeChalan = () => {
                           </strong>
                         </td>
                         <td>
+                          <strong className="text-info">
+                            PKR {(chalan.totalPaidAmount || 0).toLocaleString()}
+                          </strong>
+                        </td>
+                        <td>
+                          <strong className="text-warning">
+                            PKR {(chalan.totalDueAmount || chalan.fees.totalAmount || 0).toLocaleString()}
+                          </strong>
+                        </td>
+                        <td>
                           {chalan.dueDate ? new Date(chalan.dueDate).toLocaleDateString() : 'N/A'}
                         </td>
                         <td>
@@ -1568,6 +1867,7 @@ const FeeChalan = () => {
                               }}
                             >
                               <option value="pending">Pending</option>
+                              <option value="partial">Partial</option>
                               <option value="paid">Paid</option>
                               <option value="overdue">Overdue</option>
                             </Form.Select>
@@ -1583,7 +1883,7 @@ const FeeChalan = () => {
                         </td>
                         <td>
                           <div className="d-flex gap-2">
-                            {chalan.status !== 'paid' && (
+                            {(chalan.status === 'pending' || chalan.status === 'partial') && (
                               <Button 
                                 variant="outline-success btn-enhanced" 
                                 size="sm"
@@ -1592,6 +1892,20 @@ const FeeChalan = () => {
                               >
                                 <i className="fas fa-money-bill-wave me-1"></i>
                                 Pay
+                              </Button>
+                            )}
+                            {(chalan.paymentHistory && chalan.paymentHistory.length > 0) && (
+                              <Button 
+                                variant="outline-info btn-enhanced" 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedChalanForHistory(chalan);
+                                  setShowPaymentHistoryModal(true);
+                                }}
+                                title="View Payment History"
+                              >
+                                <i className="fas fa-history me-1"></i>
+                                History
                               </Button>
                             )}
                             <Button 
@@ -1632,10 +1946,257 @@ const FeeChalan = () => {
           </Card>
         </Tab>
 
+        <Tab eventKey="standardFee" title="Set Standard Fee">
+          <Card className="card-enhanced">
+            <Card.Header style={{ 
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              color: 'white',
+              border: 'none'
+            }}>
+              <h5 className="mb-0">
+                <i className="fas fa-globe me-2"></i>
+                Set Standard Fee for Whole School
+              </h5>
+            </Card.Header>
+            <Card.Body className="p-4">
+              <Alert variant="info" className="alert-enhanced mb-4">
+                <i className="fas fa-info-circle me-2"></i>
+                <strong>Standard Fee:</strong> Set fee amounts that will automatically apply to all students across all classes. 
+                These fees will be used when generating fee chalans for students whose classes don't have specific fee amounts configured.
+              </Alert>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      Monthly Tuition Fee (PKR) <span className="text-danger">*</span>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={standardFeeForm.monthlyTuition}
+                      onChange={(e) => setStandardFeeForm(prev => ({ ...prev, monthlyTuition: parseInt(e.target.value) || 0 }))}
+                      placeholder="Enter monthly tuition fee"
+                      min="0"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      Examination Fee (PKR) <span className="text-danger">*</span>
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={standardFeeForm.examinationFee}
+                      onChange={(e) => setStandardFeeForm(prev => ({ ...prev, examinationFee: parseInt(e.target.value) || 0 }))}
+                      placeholder="Enter examination fee"
+                      min="0"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      Library Fee (PKR)
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={standardFeeForm.libraryFee}
+                      onChange={(e) => setStandardFeeForm(prev => ({ ...prev, libraryFee: parseInt(e.target.value) || 0 }))}
+                      placeholder="Enter library fee"
+                      min="0"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      Sports Fee (PKR)
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={standardFeeForm.sportsFee}
+                      onChange={(e) => setStandardFeeForm(prev => ({ ...prev, sportsFee: parseInt(e.target.value) || 0 }))}
+                      placeholder="Enter sports fee"
+                      min="0"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      Transport Fee (PKR)
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={standardFeeForm.transportFee}
+                      onChange={(e) => setStandardFeeForm(prev => ({ ...prev, transportFee: parseInt(e.target.value) || 0 }))}
+                      placeholder="Enter transport fee"
+                      min="0"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      Other Fees (PKR)
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={standardFeeForm.otherFees}
+                      onChange={(e) => setStandardFeeForm(prev => ({ ...prev, otherFees: parseInt(e.target.value) || 0 }))}
+                      placeholder="Enter other fees"
+                      min="0"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      <i className="fas fa-percentage me-2"></i>
+                      Fine on Percentage on Total Fee (%)
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={standardFeeForm.finePercentage}
+                      onChange={(e) => setStandardFeeForm(prev => ({ ...prev, finePercentage: parseFloat(e.target.value) || 0 }))}
+                      placeholder="Enter fine percentage (e.g., 5 for 5%)"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                    />
+                    <Form.Text className="text-muted">
+                      Percentage of total fee that will be charged as fine if payment is delayed
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      <i className="fas fa-calendar-day me-2"></i>
+                      Date on Which Fine Will Apply (Day Only)
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={standardFeeForm.fineDate || ''}
+                      onChange={(e) => {
+                        const day = parseInt(e.target.value);
+                        if (day >= 1 && day <= 31) {
+                          setStandardFeeForm(prev => ({ ...prev, fineDate: day }));
+                        } else if (e.target.value === '') {
+                          setStandardFeeForm(prev => ({ ...prev, fineDate: null }));
+                        }
+                      }}
+                      placeholder="Enter day (1-31)"
+                      min="1"
+                      max="31"
+                    />
+                    <Form.Text className="text-muted">
+                      Day of the month when fine will start applying (e.g., 5 means 5th of every month)
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      <i className="fas fa-tag me-2"></i>
+                      Discount (PKR)
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={standardFeeForm.discount}
+                      onChange={(e) => setStandardFeeForm(prev => ({ ...prev, discount: parseFloat(e.target.value) || 0 }))}
+                      placeholder="Enter discount amount"
+                      min="0"
+                      step="0.01"
+                    />
+                    <Form.Text className="text-muted">
+                      Discount amount that will be deducted from the total fee (e.g., 500 for PKR 500 discount)
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <div className="bg-light p-3 rounded mt-3 mb-4">
+                <h6 className="text-primary mb-2">
+                  <i className="fas fa-calculator me-2"></i>
+                  Total Standard Fee Amount: PKR {(
+                    (standardFeeForm.monthlyTuition || 0) + 
+                    (standardFeeForm.examinationFee || 0) + 
+                    (standardFeeForm.libraryFee || 0) + 
+                    (standardFeeForm.sportsFee || 0) + 
+                    (standardFeeForm.transportFee || 0) + 
+                    (standardFeeForm.otherFees || 0)
+                  ).toLocaleString()}
+                </h6>
+                {(standardFeeForm.discount || 0) > 0 && (
+                  <>
+                    <h6 className="text-success mb-2">
+                      <i className="fas fa-tag me-2"></i>
+                      Discount: PKR {(standardFeeForm.discount || 0).toLocaleString()}
+                    </h6>
+                    <h6 className="text-primary mb-0">
+                      <i className="fas fa-calculator me-2"></i>
+                      Net Amount (After Discount): PKR {(
+                        (standardFeeForm.monthlyTuition || 0) + 
+                        (standardFeeForm.examinationFee || 0) + 
+                        (standardFeeForm.libraryFee || 0) + 
+                        (standardFeeForm.sportsFee || 0) + 
+                        (standardFeeForm.transportFee || 0) + 
+                        (standardFeeForm.otherFees || 0) - 
+                        (standardFeeForm.discount || 0)
+                      ).toLocaleString()}
+                    </h6>
+                  </>
+                )}
+              </div>
+
+              {standardFees && (
+                <Alert variant="success" className="alert-enhanced mb-4">
+                  <i className="fas fa-check-circle me-2"></i>
+                  <strong>Standard fees are currently set.</strong> Last updated: {standardFees.updatedAt ? new Date(standardFees.updatedAt.toDate ? standardFees.updatedAt.toDate() : standardFees.updatedAt).toLocaleString() : 'N/A'}
+                </Alert>
+              )}
+
+              <Button 
+                variant="success btn-enhanced" 
+                onClick={saveStandardFees}
+                disabled={loading}
+                size="lg"
+                className="w-100"
+              >
+                <i className="fas fa-save me-2"></i>
+                {loading ? 'Saving...' : 'Save Standard Fees'}
+              </Button>
+            </Card.Body>
+          </Card>
+        </Tab>
+
         <Tab eventKey="feeAmounts" title="Fee Amount Configuration">
           <Card className="card-enhanced">
             <Card.Header style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'var(--gradient-primary)',
               color: 'white',
               border: 'none'
             }}>
@@ -1665,6 +2226,8 @@ const FeeChalan = () => {
                       <th>Transport Fee</th>
                       <th>Other Fees</th>
                       <th>Total</th>
+                      <th>Fine %</th>
+                      <th>Fine Date</th>
                       <th>Status</th>
                       <th>Action</th>
                     </tr>
@@ -1756,6 +2319,24 @@ const FeeChalan = () => {
                             )}
                           </td>
                           <td>
+                            {savedFees && savedFees.finePercentage ? (
+                              <span className="fw-bold text-warning">
+                                {savedFees.finePercentage}%
+                              </span>
+                            ) : (
+                              <span className="text-muted">Not set</span>
+                            )}
+                          </td>
+                          <td>
+                            {savedFees && savedFees.fineDate ? (
+                              <Badge bg="info" className="badge-enhanced">
+                                Day {savedFees.fineDate}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted">Not set</span>
+                            )}
+                          </td>
+                          <td>
                             {savedFees ? (
                               <Badge bg="success" className="badge-enhanced">
                                 <i className="fas fa-check me-1"></i>
@@ -1803,7 +2384,7 @@ const FeeChalan = () => {
             centered
           >
             <Modal.Header closeButton style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'var(--gradient-primary)',
               color: 'white',
               border: 'none'
             }}>
@@ -1917,6 +2498,80 @@ const FeeChalan = () => {
                 </Col>
               </Row>
 
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      <i className="fas fa-percentage me-2"></i>
+                      Fine on Percentage on Total Fee (%)
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={feeAmountForm.finePercentage}
+                      onChange={(e) => setFeeAmountForm(prev => ({ ...prev, finePercentage: parseFloat(e.target.value) || 0 }))}
+                      placeholder="Enter fine percentage (e.g., 5 for 5%)"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                    />
+                    <Form.Text className="text-muted">
+                      Percentage of total fee that will be charged as fine if payment is delayed
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      <i className="fas fa-calendar-day me-2"></i>
+                      Date on Which Fine Will Apply (Day Only)
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={feeAmountForm.fineDate || ''}
+                      onChange={(e) => {
+                        const day = parseInt(e.target.value);
+                        if (day >= 1 && day <= 31) {
+                          setFeeAmountForm(prev => ({ ...prev, fineDate: day }));
+                        } else if (e.target.value === '') {
+                          setFeeAmountForm(prev => ({ ...prev, fineDate: null }));
+                        }
+                      }}
+                      placeholder="Enter day (1-31)"
+                      min="1"
+                      max="31"
+                    />
+                    <Form.Text className="text-muted">
+                      Day of the month when fine will start applying (e.g., 5 means 5th of every month)
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="form-label-enhanced">
+                      <i className="fas fa-tag me-2"></i>
+                      Discount (PKR)
+                    </Form.Label>
+                    <Form.Control
+                      type="number"
+                      className="form-control-enhanced"
+                      value={feeAmountForm.discount}
+                      onChange={(e) => setFeeAmountForm(prev => ({ ...prev, discount: parseFloat(e.target.value) || 0 }))}
+                      placeholder="Enter discount amount"
+                      min="0"
+                      step="0.01"
+                    />
+                    <Form.Text className="text-muted">
+                      Discount amount that will be deducted from the total fee (e.g., 500 for PKR 500 discount)
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+              </Row>
+
               <div className="bg-light p-3 rounded mt-3">
                 <h6 className="text-primary mb-2">
                   <i className="fas fa-calculator me-2"></i>
@@ -1929,6 +2584,26 @@ const FeeChalan = () => {
                     (feeAmountForm.otherFees || 0)
                   ).toLocaleString()}
                 </h6>
+                {(feeAmountForm.discount || 0) > 0 && (
+                  <>
+                    <h6 className="text-success mb-2">
+                      <i className="fas fa-tag me-2"></i>
+                      Discount: PKR {(feeAmountForm.discount || 0).toLocaleString()}
+                    </h6>
+                    <h6 className="text-primary mb-0">
+                      <i className="fas fa-calculator me-2"></i>
+                      Net Amount (After Discount): PKR {(
+                        (feeAmountForm.monthlyTuition || 0) + 
+                        (feeAmountForm.examinationFee || 0) + 
+                        (feeAmountForm.libraryFee || 0) + 
+                        (feeAmountForm.sportsFee || 0) + 
+                        (feeAmountForm.transportFee || 0) + 
+                        (feeAmountForm.otherFees || 0) - 
+                        (feeAmountForm.discount || 0)
+                      ).toLocaleString()}
+                    </h6>
+                  </>
+                )}
               </div>
             </Modal.Body>
             <Modal.Footer>
@@ -1952,7 +2627,7 @@ const FeeChalan = () => {
       {/* Manual Fee Chalan Form Modal */}
       <Modal show={showManualForm} onHide={() => setShowManualForm(false)} size="lg" centered>
         <Modal.Header closeButton style={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'var(--gradient-primary)',
           color: 'white',
           border: 'none'
         }}>
@@ -2135,6 +2810,98 @@ const FeeChalan = () => {
         </Modal.Footer>
       </Modal>
 
+      {/* Fee Source Selection Modal */}
+      <Modal show={showFeeSourceModal} onHide={() => setShowFeeSourceModal(false)} centered size="md">
+        <Modal.Header closeButton style={{ 
+          background: 'var(--gradient-primary)',
+          color: 'white',
+          border: 'none'
+        }}>
+          <Modal.Title>
+            <i className="fas fa-question-circle me-2"></i>
+            Select Fee Source
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <Alert variant="info" className="alert-enhanced mb-4">
+            <i className="fas fa-info-circle me-2"></i>
+            <strong>Choose Fee Source:</strong> Select which fee amounts to use when generating fee chalans.
+          </Alert>
+
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Check
+                type="radio"
+                id="feeSourceStandard"
+                name="feeSource"
+                label={
+                  <div>
+                    <strong>Standard Fee</strong>
+                    <div className="text-muted small mt-1">
+                      Use the standard fee amounts set in "Set Standard Fee" section for all students
+                      {standardFees && (
+                        <div className="mt-1">
+                          <small>Current: PKR {(
+                            (standardFees.monthlyTuition || 0) + 
+                            (standardFees.examinationFee || 0) + 
+                            (standardFees.libraryFee || 0) + 
+                            (standardFees.sportsFee || 0) + 
+                            (standardFees.transportFee || 0) + 
+                            (standardFees.otherFees || 0)
+                          ).toLocaleString()}</small>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                }
+                value="standard"
+                checked={selectedFeeSource === 'standard'}
+                onChange={(e) => setSelectedFeeSource(e.target.value)}
+                className="mb-3 p-3 border rounded"
+                style={{ cursor: 'pointer' }}
+              />
+              <Form.Check
+                type="radio"
+                id="feeSourceClass"
+                name="feeSource"
+                label={
+                  <div>
+                    <strong>Configure Fee Amounts by Class</strong>
+                    <div className="text-muted small mt-1">
+                      Use class-specific fee amounts configured in "Fee Amount Configuration" section
+                    </div>
+                  </div>
+                }
+                value="class"
+                checked={selectedFeeSource === 'class'}
+                onChange={(e) => setSelectedFeeSource(e.target.value)}
+                className="mb-3 p-3 border rounded"
+                style={{ cursor: 'pointer' }}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary btn-enhanced" onClick={() => setShowFeeSourceModal(false)}>
+            <i className="fas fa-times me-2"></i>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary btn-enhanced" 
+            onClick={() => {
+              if (pendingGenerationType === 'class') {
+                proceedWithClassGeneration();
+              } else if (pendingGenerationType === 'all') {
+                proceedWithAllStudentsGeneration();
+              }
+            }}
+          >
+            <i className="fas fa-check me-2"></i>
+            Proceed
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       {/* Pay Chalan Modal */}
       <Modal show={showPayModal} onHide={() => setShowPayModal(false)} centered>
         <Modal.Header closeButton style={{ 
@@ -2160,11 +2927,158 @@ const FeeChalan = () => {
                   <div className="fw-bold">PKR {(payingChalan.fees?.totalAmount || 0).toLocaleString()}</div>
                 </Col>
               </Row>
+              {payingChalan.dueDate && (
+                <Row className="mb-3">
+                  <Col md={12}>
+                    <div className="text-muted">Due Date</div>
+                    <div className="fw-bold">{new Date(payingChalan.dueDate).toLocaleDateString()}</div>
+                  </Col>
+                </Row>
+              )}
               <Form>
                 <Form.Group className="mb-3">
-                  <Form.Label>Amount Received (PKR)</Form.Label>
-                  <Form.Control type="number" value={paymentForm.amountReceived} onChange={(e)=>setPaymentForm({...paymentForm, amountReceived: e.target.value})} />
+                  <Form.Label>
+                    <i className="fas fa-exclamation-triangle me-2 text-warning"></i>
+                    Fine (PKR)
+                  </Form.Label>
+                  <Form.Control 
+                    type="number" 
+                    value={paymentForm.fine} 
+                    onChange={(e) => {
+                      const fine = parseFloat(e.target.value) || 0;
+                      const total = Number(payingChalan?.fees?.totalAmount || 0);
+                      const discount = Number(paymentForm.discount || 0);
+                      const existingPaid = Number(payingChalan?.totalPaidAmount || 0);
+                      const paidAmount = Number(paymentForm.paidAmount || 0);
+                      const totalWithFine = total + fine - discount;
+                      const dueAmount = Math.max(0, totalWithFine - existingPaid - paidAmount);
+                      setPaymentForm({
+                        ...paymentForm, 
+                        fine: fine,
+                        dueAmount: dueAmount,
+                        amountReceived: totalWithFine
+                      });
+                    }}
+                    step="0.01"
+                    min="0"
+                  />
+                  <Form.Text className="text-muted">
+                    {paymentForm.fine > 0 
+                      ? `Fine calculated automatically based on ${standardFees?.finePercentage || 0}% of total fee. You can modify this amount.`
+                      : 'Fine will be calculated automatically if payment is after due date.'}
+                  </Form.Text>
                 </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    <i className="fas fa-tag me-2 text-success"></i>
+                    Discount (PKR)
+                  </Form.Label>
+                  <Form.Control 
+                    type="number" 
+                    value={paymentForm.discount || 0} 
+                    onChange={(e) => {
+                      const discount = parseFloat(e.target.value) || 0;
+                      const total = Number(payingChalan?.fees?.totalAmount || 0);
+                      const fine = Number(paymentForm.fine || 0);
+                      const existingPaid = Number(payingChalan?.totalPaidAmount || 0);
+                      const paidAmount = Number(paymentForm.paidAmount || 0);
+                      const totalWithFine = total + fine - discount;
+                      const dueAmount = Math.max(0, totalWithFine - existingPaid - paidAmount);
+                      setPaymentForm({
+                        ...paymentForm, 
+                        discount: discount,
+                        dueAmount: dueAmount,
+                        amountReceived: totalWithFine
+                      });
+                    }}
+                    step="0.01"
+                    min="0"
+                  />
+                  <Form.Text className="text-muted">
+                    Enter discount amount (if any) to be deducted from the total fee.
+                  </Form.Text>
+                </Form.Group>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        <i className="fas fa-money-bill-wave me-2 text-success"></i>
+                        Paid Amount (PKR)
+                      </Form.Label>
+                      <Form.Control 
+                        type="number" 
+                        value={paymentForm.paidAmount || 0} 
+                        onChange={(e) => {
+                          const paidAmount = parseFloat(e.target.value) || 0;
+                          const total = Number(payingChalan?.fees?.totalAmount || 0);
+                          const fine = Number(paymentForm.fine || 0);
+                          const discount = Number(paymentForm.discount || 0);
+                          const existingPaid = Number(payingChalan?.totalPaidAmount || 0);
+                          const totalWithFine = total + fine - discount;
+                          const dueAmount = Math.max(0, totalWithFine - existingPaid - paidAmount);
+                          
+                          setPaymentForm({
+                            ...paymentForm, 
+                            paidAmount: paidAmount,
+                            dueAmount: dueAmount,
+                            amountReceived: totalWithFine
+                          });
+                        }}
+                        step="0.01"
+                        min="0"
+                        max={(() => {
+                          const total = Number(payingChalan?.fees?.totalAmount || 0);
+                          const fine = Number(paymentForm.fine || 0);
+                          const discount = Number(paymentForm.discount || 0);
+                          const existingPaid = Number(payingChalan?.totalPaidAmount || 0);
+                          return Math.max(0, total + fine - discount - existingPaid);
+                        })()}
+                      />
+                      <Form.Text className="text-muted">
+                        Enter the amount the student is paying now.
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        <i className="fas fa-exclamation-circle me-2 text-warning"></i>
+                        Due Amount (PKR)
+                      </Form.Label>
+                      <Form.Control 
+                        type="number" 
+                        value={paymentForm.dueAmount || 0} 
+                        readOnly
+                        className="bg-light"
+                      />
+                      <Form.Text className="text-muted">
+                        Remaining amount after this payment (automatically calculated).
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <div className="bg-light p-3 rounded mb-3">
+                  <div className="small text-muted mb-1">
+                    <strong>Payment Summary:</strong>
+                  </div>
+                  <div className="small">
+                    Total Fee: PKR {(payingChalan.fees?.totalAmount || 0).toLocaleString()}
+                    {paymentForm.fine > 0 ? ` + Fine: PKR ${(paymentForm.fine || 0).toLocaleString()}` : ''}
+                    {paymentForm.discount > 0 ? ` - Discount: PKR ${(paymentForm.discount || 0).toLocaleString()}` : ''}
+                    {' = PKR '}{((payingChalan.fees?.totalAmount || 0) + (paymentForm.fine || 0) - (paymentForm.discount || 0)).toLocaleString()}
+                  </div>
+                  {(payingChalan?.totalPaidAmount || 0) > 0 && (
+                    <div className="small text-info mt-1">
+                      Previously Paid: PKR {(payingChalan.totalPaidAmount || 0).toLocaleString()}
+                    </div>
+                  )}
+                  <div className="small text-success mt-1">
+                    <strong>This Payment: PKR {(paymentForm.paidAmount || 0).toLocaleString()}</strong>
+                  </div>
+                  <div className="small text-warning mt-1">
+                    <strong>Remaining Due: PKR {(paymentForm.dueAmount || 0).toLocaleString()}</strong>
+                  </div>
+                </div>
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
@@ -2179,7 +3093,28 @@ const FeeChalan = () => {
                   <Col md={6}>
                     <Form.Group className="mb-3">
                       <Form.Label>Paid Date</Form.Label>
-                      <Form.Control type="date" value={paymentForm.paidDate} onChange={(e)=>setPaymentForm({...paymentForm, paidDate: e.target.value})} />
+                      <Form.Control 
+                        type="date" 
+                        value={paymentForm.paidDate} 
+                        onChange={(e) => {
+                          const newPaidDate = e.target.value;
+                          // Recalculate fine when paid date changes
+                          const calculatedFine = calculateFine(payingChalan, newPaidDate);
+                          const total = Number(payingChalan?.fees?.totalAmount || 0);
+                          const discount = Number(paymentForm.discount || 0);
+                          const existingPaid = Number(payingChalan?.totalPaidAmount || 0);
+                          const paidAmount = Number(paymentForm.paidAmount || 0);
+                          const totalWithFine = total + calculatedFine - discount;
+                          const dueAmount = Math.max(0, totalWithFine - existingPaid - paidAmount);
+                          setPaymentForm({
+                            ...paymentForm, 
+                            paidDate: newPaidDate,
+                            fine: calculatedFine,
+                            dueAmount: dueAmount,
+                            amountReceived: totalWithFine
+                          });
+                        }} 
+                      />
                     </Form.Group>
                   </Col>
                 </Row>
@@ -2201,6 +3136,140 @@ const FeeChalan = () => {
           </Button>
           <Button variant="success btn-enhanced" onClick={submitPayment}>
             <i className="fas fa-check me-2"></i>Pay
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Payment History Modal */}
+      <Modal show={showPaymentHistoryModal} onHide={() => setShowPaymentHistoryModal(false)} size="lg" centered>
+        <Modal.Header closeButton style={{ 
+          background: 'var(--gradient-primary)',
+          color: 'white',
+          border: 'none'
+        }}>
+          <Modal.Title>
+            <i className="fas fa-history me-2"></i>
+            Payment History
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedChalanForHistory && (
+            <>
+              <div className="mb-4">
+                <h6 className="text-muted mb-2">Chalan Information</h6>
+                <div className="bg-light p-3 rounded">
+                  <Row>
+                    <Col md={6}>
+                      <div className="small text-muted">Student Name</div>
+                      <div className="fw-bold">{selectedChalanForHistory.studentName}</div>
+                    </Col>
+                    <Col md={6}>
+                      <div className="small text-muted">Chalan Number</div>
+                      <div className="fw-bold">{selectedChalanForHistory.chalanNumber}</div>
+                    </Col>
+                  </Row>
+                  <Row className="mt-2">
+                    <Col md={4}>
+                      <div className="small text-muted">Total Amount</div>
+                      <div className="fw-bold text-success">PKR {(selectedChalanForHistory.fees?.totalAmount || 0).toLocaleString()}</div>
+                    </Col>
+                    <Col md={4}>
+                      <div className="small text-muted">Total Paid</div>
+                      <div className="fw-bold text-info">PKR {(selectedChalanForHistory.totalPaidAmount || 0).toLocaleString()}</div>
+                    </Col>
+                    <Col md={4}>
+                      <div className="small text-muted">Remaining Due</div>
+                      <div className="fw-bold text-warning">PKR {(selectedChalanForHistory.totalDueAmount || selectedChalanForHistory.fees?.totalAmount || 0).toLocaleString()}</div>
+                    </Col>
+                  </Row>
+                </div>
+              </div>
+
+              {selectedChalanForHistory.paymentHistory && selectedChalanForHistory.paymentHistory.length > 0 ? (
+                <div>
+                  <h6 className="text-muted mb-3">Payment Records</h6>
+                  <div className="table-responsive">
+                    <Table striped bordered hover>
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Paid Amount</th>
+                          <th>Fine</th>
+                          <th>Discount</th>
+                          <th>Due After Payment</th>
+                          <th>Payment Method</th>
+                          <th>Reference No</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedChalanForHistory.paymentHistory.map((payment, index) => (
+                          <tr key={index}>
+                            <td>
+                              {payment.paidDate 
+                                ? new Date(payment.paidDate).toLocaleDateString() 
+                                : payment.recordedAt 
+                                  ? (payment.recordedAt.toDate ? new Date(payment.recordedAt.toDate()).toLocaleDateString() : new Date(payment.recordedAt).toLocaleDateString())
+                                  : 'N/A'}
+                            </td>
+                            <td>
+                              <strong className="text-success">PKR {(payment.paidAmount || 0).toLocaleString()}</strong>
+                            </td>
+                            <td>
+                              {(payment.fine || 0) > 0 ? (
+                                <span className="text-warning">PKR {(payment.fine || 0).toLocaleString()}</span>
+                              ) : (
+                                <span className="text-muted">-</span>
+                              )}
+                            </td>
+                            <td>
+                              {(payment.discount || 0) > 0 ? (
+                                <span className="text-success">PKR {(payment.discount || 0).toLocaleString()}</span>
+                              ) : (
+                                <span className="text-muted">-</span>
+                              )}
+                            </td>
+                            <td>
+                              <strong className="text-warning">PKR {(payment.dueAmount || 0).toLocaleString()}</strong>
+                            </td>
+                            <td>
+                              <Badge bg="secondary">{payment.paymentMethod || 'cash'}</Badge>
+                            </td>
+                            <td>{payment.referenceNo || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                  {selectedChalanForHistory.paymentHistory.some(p => p.remarks) && (
+                    <div className="mt-3">
+                      <h6 className="text-muted mb-2">Remarks</h6>
+                      {selectedChalanForHistory.paymentHistory.map((payment, index) => (
+                        payment.remarks && (
+                          <div key={index} className="bg-light p-2 rounded mb-2">
+                            <div className="small text-muted">
+                              {payment.paidDate 
+                                ? new Date(payment.paidDate).toLocaleDateString() 
+                                : 'N/A'}: 
+                            </div>
+                            <div>{payment.remarks}</div>
+                          </div>
+                        )
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Alert variant="info">
+                  <i className="fas fa-info-circle me-2"></i>
+                  No payment history available for this chalan.
+                </Alert>
+              )}
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary btn-enhanced" onClick={() => setShowPaymentHistoryModal(false)}>
+            Close
           </Button>
         </Modal.Footer>
       </Modal>

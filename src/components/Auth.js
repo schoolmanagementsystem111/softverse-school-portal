@@ -75,6 +75,9 @@ const Auth = () => {
   useEffect(() => {
     if (currentUser && userRole && !authLoading && isRedirecting) {
       switch (userRole) {
+        case 'superadmin':
+          navigate('/super-admin/dashboard');
+          break;
         case 'admin':
           navigate('/admin/dashboard');
           break;
@@ -291,10 +294,10 @@ const Auth = () => {
             <Col md={6} className="text-center">
               <Card className="welcome-card">
                 <Card.Body className="p-5">
-                  <div className="spinner-border" style={{ color: '#667eea', width: '4rem', height: '4rem' }} role="status">
+                  <div className="spinner-border text-brand" style={{ width: '4rem', height: '4rem' }} role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>
-                  <h4 className="mt-4" style={{ color: '#667eea' }}>Verifying your account...</h4>
+                  <h4 className="mt-4 text-brand">Verifying your account...</h4>
                   <p className="text-muted">Please wait while we fetch your role information</p>
                   <div className="mt-4">
                     <Button
@@ -356,8 +359,8 @@ const Auth = () => {
                   <Tab eventKey="login" title={<span><i className="fas fa-sign-in-alt me-2"></i>Login</span>}>
                     <Form onSubmit={handleLogin} className="mt-4">
                       <Form.Group className="mb-4">
-                        <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                          <i className="fas fa-envelope me-2" style={{ color: '#667eea' }}></i>
+                        <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                          <i className="fas fa-envelope me-2 text-brand"></i>
                           Email
                         </Form.Label>
                         <Form.Control
@@ -370,8 +373,8 @@ const Auth = () => {
                         />
                       </Form.Group>
                       <Form.Group className="mb-4">
-                        <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                          <i className="fas fa-lock me-2" style={{ color: '#667eea' }}></i>
+                        <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                          <i className="fas fa-lock me-2 text-brand"></i>
                           Password
                         </Form.Label>
                         <Form.Control
@@ -388,15 +391,6 @@ const Auth = () => {
                         type="submit" 
                         className="w-100 btn-auth-submit"
                         disabled={loading}
-                        style={{ 
-                          padding: '12px',
-                          fontWeight: 600,
-                          borderRadius: '10px',
-                          fontSize: '1.1rem',
-                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                          border: 'none',
-                          boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)'
-                        }}
                       >
                         {loading ? (
                           <>
@@ -416,8 +410,8 @@ const Auth = () => {
                   <Tab eventKey="signup" title={<span><i className="fas fa-user-plus me-2"></i>Sign Up</span>}>
                     <Form onSubmit={handleSignup} className="mt-4">
                       <Form.Group className="mb-3">
-                        <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                          <i className="fas fa-user me-2" style={{ color: '#667eea' }}></i>
+                        <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                          <i className="fas fa-user me-2 text-brand"></i>
                           Full Name
                         </Form.Label>
                         <Form.Control
@@ -431,8 +425,8 @@ const Auth = () => {
                       </Form.Group>
                     
                       <Form.Group className="mb-3">
-                        <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                          <i className="fas fa-envelope me-2" style={{ color: '#667eea' }}></i>
+                        <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                          <i className="fas fa-envelope me-2 text-brand"></i>
                           Email
                         </Form.Label>
                         <Form.Control
@@ -446,8 +440,8 @@ const Auth = () => {
                       </Form.Group>
                     
                       <Form.Group className="mb-3">
-                        <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                          <i className="fas fa-lock me-2" style={{ color: '#667eea' }}></i>
+                        <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                          <i className="fas fa-lock me-2 text-brand"></i>
                           Password
                         </Form.Label>
                         <Form.Control
@@ -479,8 +473,8 @@ const Auth = () => {
                       <Row>
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                              <i className="fas fa-user-tag me-2" style={{ color: '#667eea' }}></i>
+                            <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                              <i className="fas fa-user-tag me-2 text-brand"></i>
                               Role
                             </Form.Label>
                             <Form.Select
@@ -492,7 +486,8 @@ const Auth = () => {
                               <option value="student">Student</option>
                               <option value="teacher">Teacher</option>
                               <option value="parent">Parent</option>
-                              <option value="admin">Admin</option>
+                              <option value="superadmin">Super Admin</option>
+                              {/* <option value="admin">Admin</option> */}
                               <option value="transport">Transport</option>
                               <option value="library">Library</option>
                               <option value="accounts">Accounts</option>
@@ -503,8 +498,8 @@ const Auth = () => {
                         </Col>
                         <Col md={6}>
                           <Form.Group className="mb-3">
-                            <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                              <i className="fas fa-user-friends me-2" style={{ color: '#667eea' }}></i>
+                            <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                              <i className="fas fa-user-friends me-2 text-brand"></i>
                               Gender
                             </Form.Label>
                             <Form.Select
@@ -522,8 +517,8 @@ const Auth = () => {
                       </Row>
                       
                       <Form.Group className="mb-3">
-                        <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                          <i className="fas fa-phone me-2" style={{ color: '#667eea' }}></i>
+                        <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                          <i className="fas fa-phone me-2 text-brand"></i>
                           Phone
                         </Form.Label>
                         <Form.Control
@@ -536,8 +531,8 @@ const Auth = () => {
                       </Form.Group>
                     
                       <Form.Group className="mb-3">
-                        <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                          <i className="fas fa-map-marker-alt me-2" style={{ color: '#667eea' }}></i>
+                        <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                          <i className="fas fa-map-marker-alt me-2 text-brand"></i>
                           Address
                         </Form.Label>
                         <Form.Control
@@ -550,8 +545,8 @@ const Auth = () => {
                       </Form.Group>
                       
                       <Form.Group className="mb-3">
-                        <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                          <i className="fas fa-image me-2" style={{ color: '#667eea' }}></i>
+                        <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                          <i className="fas fa-image me-2 text-brand"></i>
                           Profile Image (Optional)
                         </Form.Label>
                         <Form.Control
@@ -570,7 +565,7 @@ const Auth = () => {
                                 maxHeight: '150px', 
                                 borderRadius: '8px',
                                 objectFit: 'cover',
-                                border: '2px solid #667eea'
+                                border: '2px solid var(--secondary-color)'
                               }} 
                             />
                           </div>
@@ -585,8 +580,8 @@ const Auth = () => {
                           <Row>
                             <Col md={6}>
                               <Form.Group className="mb-3">
-                                <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                                  <i className="fas fa-birthday-cake me-2" style={{ color: '#667eea' }}></i>
+                                <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                                  <i className="fas fa-birthday-cake me-2 text-brand"></i>
                                   Date of Birth
                                 </Form.Label>
                                 <Form.Control
@@ -599,8 +594,8 @@ const Auth = () => {
                             </Col>
                           </Row>
                           <Form.Group className="mb-3">
-                            <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                              <i className="fas fa-user me-2" style={{ color: '#667eea' }}></i>
+                          <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                            <i className="fas fa-user me-2 text-brand"></i>
                               Parent Name
                             </Form.Label>
                             <Form.Control
@@ -615,8 +610,8 @@ const Auth = () => {
                           <Row>
                             <Col md={6}>
                               <Form.Group className="mb-3">
-                                <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                                  <i className="fas fa-id-card me-2" style={{ color: '#667eea' }}></i>
+                                <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                                  <i className="fas fa-id-card me-2 text-brand"></i>
                                   Parent CNIC
                                 </Form.Label>
                                 <Form.Control
@@ -630,8 +625,8 @@ const Auth = () => {
                             </Col>
                             <Col md={6}>
                               <Form.Group className="mb-3">
-                                <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                                  <i className="fas fa-id-badge me-2" style={{ color: '#667eea' }}></i>
+                                <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                                  <i className="fas fa-id-badge me-2 text-brand"></i>
                                   Student B Form Number
                                 </Form.Label>
                                 <Form.Control
@@ -646,8 +641,8 @@ const Auth = () => {
                           </Row>
 
                           <Form.Group className="mb-3">
-                            <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                              <i className="fas fa-id-card me-2" style={{ color: '#667eea' }}></i>
+                            <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                              <i className="fas fa-id-card me-2 text-brand"></i>
                               Roll Number
                             </Form.Label>
                             <Form.Control
@@ -660,8 +655,8 @@ const Auth = () => {
                           </Form.Group>
                           
                           <Form.Group className="mb-3">
-                            <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                              <i className="fas fa-graduation-cap me-2" style={{ color: '#667eea' }}></i>
+                            <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                              <i className="fas fa-graduation-cap me-2 text-brand"></i>
                               Class *
                             </Form.Label>
                             <Form.Select
@@ -685,8 +680,8 @@ const Auth = () => {
                           </Form.Group>
                           
                           <Form.Group className="mb-3">
-                            <Form.Label style={{ fontWeight: 600, color: '#475569' }}>
-                              <i className="fas fa-user-shield me-2" style={{ color: '#667eea' }}></i>
+                            <Form.Label style={{ fontWeight: 600, color: 'var(--color-muted)' }}>
+                              <i className="fas fa-user-shield me-2 text-brand"></i>
                               Parent Email (Optional)
                             </Form.Label>
                             <Form.Control
@@ -705,15 +700,6 @@ const Auth = () => {
                         type="submit" 
                         className="w-100 btn-auth-submit"
                         disabled={loading}
-                        style={{ 
-                          padding: '12px',
-                          fontWeight: 600,
-                          borderRadius: '10px',
-                          fontSize: '1.1rem',
-                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                          border: 'none',
-                          boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)'
-                        }}
                       >
                         {loading ? (
                           <>

@@ -146,10 +146,26 @@ const StudyMaterials = () => {
         throw new Error('Invalid URL format: ' + fileUrl);
       }
       
+      // Prefer PNG when Cloudinary URL indicates SVG
+      let downloadUrl = fileUrl;
+      let downloadName = fileName || 'study-material';
+      if (
+        downloadUrl.includes('cloudinary.com') &&
+        (downloadUrl.toLowerCase().endsWith('.svg') || (downloadName && downloadName.toLowerCase().endsWith('.svg')) || downloadUrl.includes('format=svg'))
+      ) {
+        console.log('Converting Cloudinary SVG to PNG for download');
+        if (downloadUrl.includes('/upload/')) {
+          downloadUrl = downloadUrl.replace('/upload/', '/upload/f_png,fl_attachment/');
+        } else {
+          downloadUrl = downloadUrl + '?fl_attachment&f=png';
+        }
+        downloadName = downloadName.replace(/\.svg$/i, '.png');
+      }
+      
       // Method 1: Try fetch + blob download (most reliable)
       try {
         console.log('Attempting fetch + blob download...');
-        const response = await fetch(fileUrl, {
+        const response = await fetch(downloadUrl, {
           method: 'GET',
           mode: 'cors',
           cache: 'no-cache'
@@ -166,7 +182,7 @@ const StudyMaterials = () => {
         const blobUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = blobUrl;
-        link.download = fileName || 'study-material';
+        link.download = downloadName;
         link.style.display = 'none';
         
         document.body.appendChild(link);
@@ -184,33 +200,34 @@ const StudyMaterials = () => {
       }
       
       // Method 2: Try Cloudinary-specific handling
-      if (fileUrl.includes('cloudinary.com')) {
+      if (downloadUrl.includes('cloudinary.com')) {
         console.log('Processing Cloudinary URL with attachment flag');
-        
-        // Try multiple Cloudinary URL variations
+      
+        // Try multiple Cloudinary URL variations (ensure PNG)
+        const baseUrl = downloadUrl.includes('/upload/')
+          ? downloadUrl.replace('/upload/', '/upload/f_png,fl_attachment/')
+          : downloadUrl + '?fl_attachment&f=png';
         const urlVariations = [
-          fileUrl.includes('upload/') 
-            ? fileUrl.replace('/upload/', '/upload/fl_attachment/')
-            : fileUrl + '?fl_attachment',
-          fileUrl + '?fl_attachment',
-          fileUrl.replace('/upload/', '/upload/fl_attachment/')
+          baseUrl,
+          downloadUrl + '?fl_attachment&f=png',
+          downloadUrl.replace('/upload/', '/upload/fl_attachment/') // fallback attachment only
         ];
-        
+      
         for (let i = 0; i < urlVariations.length; i++) {
           try {
             console.log(`Trying Cloudinary variation ${i + 1}:`, urlVariations[i]);
-            
+      
             const link = document.createElement('a');
             link.href = urlVariations[i];
-            link.download = fileName || 'study-material';
+            link.download = downloadName;
             link.target = '_blank';
             link.rel = 'noopener noreferrer';
             link.style.display = 'none';
-            
+      
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+      
             console.log(`Cloudinary variation ${i + 1} successful`);
             return;
           } catch (cloudinaryError) {
@@ -222,8 +239,8 @@ const StudyMaterials = () => {
       // Method 3: Standard anchor download
       console.log('Trying standard anchor download...');
       const link = document.createElement('a');
-      link.href = fileUrl;
-      link.download = fileName || 'study-material';
+      link.href = downloadUrl;
+      link.download = downloadName;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
       link.style.display = 'none';

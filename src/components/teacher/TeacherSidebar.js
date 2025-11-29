@@ -56,14 +56,14 @@ const TeacherSidebar = ({ onClose, handleLogout }) => {
   };
 
   return (
-    <div className="sidebar-enhanced" style={{ width: '280px', minHeight: '100vh', position: 'relative' }}>
+    <div className="sidebar-enhanced" style={{ minHeight: '100vh' }}>
       <button className="sidebar-close-btn" onClick={handleCloseSidebar}>
         <i className="fas fa-times"></i>
       </button>
       <div className="p-4">
         <div className="d-flex align-items-center">
           <div className="me-3">
-            <i className="fas fa-chalkboard-teacher fa-2x" style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}></i>
+            <span className="material-symbols-rounded sidebar-header-icon" data-icon="co_present">co_present</span>
           </div>
           <div>
             <h5 className="mb-0" style={{ fontWeight: '700', color: 'white' }}>Teacher Panel</h5>
@@ -73,68 +73,68 @@ const TeacherSidebar = ({ onClose, handleLogout }) => {
       </div>
       <Nav className="flex-column px-3">
         <LinkContainer to="/teacher/dashboard" onClick={handleCloseSidebar}>
-          <Nav.Link className="text-white">
-            <i className="fas fa-tachometer-alt me-2"></i>
+          <Nav.Link className="text-white sidebar-item">
+            <span className="material-symbols-rounded me-2" data-icon="dashboard">dashboard</span>
             Dashboard
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/teacher/attendance" onClick={handleCloseSidebar}>
-          <Nav.Link className="text-white">
-            <i className="fas fa-calendar-check me-2"></i>
+          <Nav.Link className="text-white sidebar-item">
+            <span className="material-symbols-rounded me-2" data-icon="event_available">event_available</span>
             Mark Attendance
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/teacher/qr-scan" onClick={handleCloseSidebar}>
-          <Nav.Link className="text-white">
-            <i className="fas fa-qrcode me-2"></i>
+          <Nav.Link className="text-white sidebar-item">
+            <span className="material-symbols-rounded me-2" data-icon="qr_code_2">qr_code_2</span>
             Scan My QR
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/teacher/timetable" onClick={handleCloseSidebar}>
-          <Nav.Link className="text-white">
-            <i className="fas fa-table me-2"></i>
+          <Nav.Link className="text-white sidebar-item">
+            <span className="material-symbols-rounded me-2" data-icon="calendar_view_month">calendar_view_month</span>
             Timetable
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/teacher/my-attendance" onClick={handleCloseSidebar}>
-          <Nav.Link className="text-white">
-            <i className="fas fa-user-clock me-2"></i>
+          <Nav.Link className="text-white sidebar-item">
+            <span className="material-symbols-rounded me-2" data-icon="schedule">schedule</span>
             My Attendance
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/teacher/grades" onClick={handleCloseSidebar}>
-          <Nav.Link className="text-white">
-            <i className="fas fa-graduation-cap me-2"></i>
+          <Nav.Link className="text-white sidebar-item">
+            <span className="material-symbols-rounded me-2" data-icon="grading">grading</span>
             Grade Management
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/teacher/results" onClick={handleCloseSidebar}>
-          <Nav.Link className="text-white">
-            <i className="fas fa-chart-line me-2"></i>
+          <Nav.Link className="text-white sidebar-item">
+            <span className="material-symbols-rounded me-2" data-icon="analytics">analytics</span>
             Results
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/teacher/materials" onClick={handleCloseSidebar}>
-          <Nav.Link className="text-white">
-            <i className="fas fa-book me-2"></i>
+          <Nav.Link className="text-white sidebar-item">
+            <span className="material-symbols-rounded me-2" data-icon="menu_book">menu_book</span>
             Study Materials
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/teacher/messages" onClick={handleCloseSidebar}>
-          <Nav.Link className="text-white">
-            <i className="fas fa-envelope me-2"></i>
+          <Nav.Link className="text-white sidebar-item">
+            <span className="material-symbols-rounded me-2" data-icon="mail">mail</span>
             Messages
           </Nav.Link>
         </LinkContainer>
         <LinkContainer to="/teacher/announcements" onClick={handleCloseSidebar}>
-          <Nav.Link className="text-white">
-            <i className="fas fa-bullhorn me-2"></i>
+          <Nav.Link className="text-white sidebar-item">
+            <span className="material-symbols-rounded me-2" data-icon="campaign">campaign</span>
             Announcements
           </Nav.Link>
         </LinkContainer>
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: '10px', paddingTop: '10px' }}>
-          <Nav.Link className="text-white" onClick={handleLogoutClick} style={{ cursor: 'pointer' }}>
-            <i className="fas fa-sign-out-alt me-2"></i>
+          <Nav.Link className="text-white sidebar-item" onClick={handleLogoutClick} style={{ cursor: 'pointer' }}>
+            <span className="material-symbols-rounded me-2" data-icon="logout">logout</span>
             Logout
           </Nav.Link>
         </div>

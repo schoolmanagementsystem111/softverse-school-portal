@@ -613,7 +613,7 @@ const ParentFeeChalan = () => {
         <Tab eventKey="all-chalans" title="All Fee Chalans">
           <Card className="card-enhanced">
             <Card.Header style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'var(--gradient-primary)',
               color: 'white',
               border: 'none'
             }}>

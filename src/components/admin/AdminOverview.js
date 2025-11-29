@@ -22,7 +22,6 @@ const AdminOverview = () => {
 
   const fetchStats = async () => {
     try {
-      // Get user counts by role
       const usersRef = collection(db, 'users');
       const studentsQuery = query(usersRef, where('role', '==', 'student'));
       const teachersQuery = query(usersRef, where('role', '==', 'teacher'));
@@ -34,11 +33,9 @@ const AdminOverview = () => {
         getDocs(parentsQuery)
       ]);
 
-      // Get classes count
       const classesRef = collection(db, 'classes');
       const classesSnapshot = await getDocs(classesRef);
 
-      // Get today's attendance (simplified - you might want to implement proper date filtering)
       const attendanceRef = collection(db, 'attendance');
       const attendanceSnapshot = await getDocs(attendanceRef);
 
@@ -67,124 +64,247 @@ const AdminOverview = () => {
     );
   }
 
+  const accentPalette = {
+    students: {
+      background: 'linear-gradient(128deg, #1e3a8a 0%, #2563eb 100%)',
+      shadow: '0 18px 42px rgba(37, 99, 235, 0.35)',
+      iconBackground: 'rgba(255, 255, 255, 0.16)',
+      badgeBackground: 'rgba(255, 255, 255, 0.22)',
+      badgeColor: '#ffffff'
+    },
+    teachers: {
+      background: 'linear-gradient(128deg, #8b5cf6 0%, #a855f7 100%)',
+      shadow: '0 18px 42px rgba(168, 85, 247, 0.35)',
+      iconBackground: 'rgba(255, 255, 255, 0.16)',
+      badgeBackground: 'rgba(255, 255, 255, 0.22)',
+      badgeColor: '#ffffff'
+    },
+    parents: {
+      background: 'linear-gradient(128deg, #06b6d4 0%, #0ea5e9 100%)',
+      shadow: '0 18px 42px rgba(14, 165, 233, 0.35)',
+      iconBackground: 'rgba(255, 255, 255, 0.16)',
+      badgeBackground: 'rgba(255, 255, 255, 0.22)',
+      badgeColor: '#ffffff'
+    },
+    classes: {
+      background: 'linear-gradient(128deg, #16a34a 0%, #22c55e 100%)',
+      shadow: '0 18px 42px rgba(34, 197, 94, 0.35)',
+      iconBackground: 'rgba(255, 255, 255, 0.16)',
+      badgeBackground: 'rgba(255, 255, 255, 0.22)',
+      badgeColor: '#ffffff'
+    }
+  };
+
+  const statCards = [
+    {
+      key: 'students',
+      value: stats.totalStudents,
+      title: 'Total Students',
+      icon: 'fas fa-user-graduate',
+      badgeIcon: 'fas fa-arrow-up',
+      badgeLabel: 'Active',
+      accent: 'students'
+    },
+    {
+      key: 'teachers',
+      value: stats.totalTeachers,
+      title: 'Total Teachers',
+      icon: 'fas fa-chalkboard-teacher',
+      badgeIcon: 'fas fa-users',
+      badgeLabel: 'Faculty',
+      accent: 'teachers'
+    },
+    {
+      key: 'parents',
+      value: stats.totalParents,
+      title: 'Total Parents',
+      icon: 'fas fa-users',
+      badgeIcon: 'fas fa-heart',
+      badgeLabel: 'Connected',
+      accent: 'parents'
+    },
+    {
+      key: 'classes',
+      value: stats.totalClasses,
+      title: 'Total Classes',
+      icon: 'fas fa-school',
+      badgeIcon: 'fas fa-graduation-cap',
+      badgeLabel: 'Active',
+      accent: 'classes'
+    }
+  ];
+
+  const quickActions = [
+    {
+      key: 'student',
+      label: 'Add New Student',
+      icon: 'fas fa-user-plus',
+      styles: {
+        color: '#ffffff',
+        background: 'linear-gradient(120deg, #1e3a8a 0%, #2563eb 100%)',
+        border: 'none',
+        boxShadow: '0 12px 28px rgba(37, 99, 235, 0.35)'
+      },
+      onClick: () => navigate('/admin/users#add-student')
+    },
+    {
+      key: 'teacher',
+      label: 'Add New Teacher',
+      icon: 'fas fa-chalkboard-teacher',
+      styles: {
+        color: '#ffffff',
+        background: 'linear-gradient(120deg, #166534 0%, #22c55e 100%)',
+        border: 'none',
+        boxShadow: '0 12px 28px rgba(34, 197, 94, 0.35)'
+      },
+      onClick: () => navigate('/admin/users#add-teacher')
+    },
+    {
+      key: 'class',
+      label: 'Create Class',
+      icon: 'fas fa-school',
+      styles: {
+        color: '#ffffff',
+        background: 'linear-gradient(120deg, #0ea5e9 0%, #06b6d4 100%)',
+        border: 'none',
+        boxShadow: '0 12px 28px rgba(14, 165, 233, 0.35)'
+      },
+      onClick: () => navigate('/admin/classes#new-class')
+    },
+    {
+      key: 'announce',
+      label: 'Send Announcement',
+      icon: 'fas fa-bullhorn',
+      styles: {
+        color: '#ffffff',
+        background: 'linear-gradient(120deg, #f59e0b 0%, #fb923c 100%)',
+        border: 'none',
+        boxShadow: '0 12px 28px rgba(245, 158, 11, 0.35)'
+      },
+      onClick: () => navigate('/admin/announcements#compose')
+    }
+  ];
+
   return (
     <div className="animate-fadeInUp">
       <div className="mb-4">
-        <h2 className="mb-1" style={{ background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-          <i className="fas fa-tachometer-alt me-3"></i>
-          Admin Dashboard Overview
-        </h2>
-        <p className="text-muted mb-0">Welcome to your school management control center</p>
+        <div
+          className="p-4 p-md-5"
+          style={{
+            background: 'linear-gradient(120deg, #1e3a8a 0%, #2563eb 100%)',
+            borderRadius: '22px',
+            color: '#ffffff',
+            boxShadow: '0 18px 42px rgba(37, 99, 235, 0.35)'
+          }}
+        >
+          <div className="d-flex align-items-center">
+            <div className="flex-grow-1">
+              <h3 className="mb-1" style={{ fontWeight: 800 }}>Admin Dashboard</h3>
+              <p className="mb-4" style={{ opacity: 0.85 }}>Real-time monitoring and control</p>
+              <Row className="g-3">
+                <Col sm={3} xs={6}>
+                  <div className="small text-uppercase" style={{ opacity: 0.7 }}>Students</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.15rem' }}>{stats.totalStudents}</div>
+                </Col>
+                <Col sm={3} xs={6}>
+                  <div className="small text-uppercase" style={{ opacity: 0.7 }}>Teachers</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.15rem' }}>{stats.totalTeachers}</div>
+                </Col>
+                <Col sm={3} xs={6}>
+                  <div className="small text-uppercase" style={{ opacity: 0.7 }}>Classes</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.15rem' }}>{stats.totalClasses}</div>
+                </Col>
+                <Col sm={3} xs={6}>
+                  <div className="small text-uppercase" style={{ opacity: 0.7 }}>Attendance</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.15rem' }}>{stats.attendanceToday}</div>
+                </Col>
+              </Row>
+            </div>
+            <div className="ms-4 d-none d-sm-block">
+              <div
+                style={{
+                  width: '92px',
+                  height: '92px',
+                  borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.18)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <div
+                  style={{
+                    width: '72px',
+                    height: '72px',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.22)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <i className="fas fa-tachometer-alt fa-lg" style={{ color: '#ffffff' }}></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <Row className="mb-4">
-        <Col md={3}>
-          <Card className="text-center card-enhanced" style={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            border: 'none',
-            boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
-          }}>
-            <Card.Body className="p-4">
-              <div className="mb-3">
-                <i className="fas fa-user-graduate fa-3x" style={{ 
-                  background: 'rgba(255,255,255,0.2)', 
-                  borderRadius: '50%', 
-                  padding: '20px',
-                  backdropFilter: 'blur(10px)'
-                }}></i>
-              </div>
-              <h2 className="mb-2" style={{ fontSize: '2.5rem', fontWeight: '700' }}>{stats.totalStudents}</h2>
-              <p className="mb-0" style={{ fontSize: '1.1rem', opacity: '0.9' }}>Total Students</p>
-              <Badge bg="light" text="dark" className="mt-2 badge-enhanced">
-                <i className="fas fa-arrow-up me-1"></i>
-                Active
-              </Badge>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card className="text-center card-enhanced" style={{ 
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            color: 'white',
-            border: 'none',
-            boxShadow: '0 8px 25px rgba(240, 147, 251, 0.3)'
-          }}>
-            <Card.Body className="p-4">
-              <div className="mb-3">
-                <i className="fas fa-chalkboard-teacher fa-3x" style={{ 
-                  background: 'rgba(255,255,255,0.2)', 
-                  borderRadius: '50%', 
-                  padding: '20px',
-                  backdropFilter: 'blur(10px)'
-                }}></i>
-              </div>
-              <h2 className="mb-2" style={{ fontSize: '2.5rem', fontWeight: '700' }}>{stats.totalTeachers}</h2>
-              <p className="mb-0" style={{ fontSize: '1.1rem', opacity: '0.9' }}>Total Teachers</p>
-              <Badge bg="light" text="dark" className="mt-2 badge-enhanced">
-                <i className="fas fa-users me-1"></i>
-                Faculty
-              </Badge>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card className="text-center card-enhanced" style={{ 
-            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-            color: 'white',
-            border: 'none',
-            boxShadow: '0 8px 25px rgba(79, 172, 254, 0.3)'
-          }}>
-            <Card.Body className="p-4">
-              <div className="mb-3">
-                <i className="fas fa-users fa-3x" style={{ 
-                  background: 'rgba(255,255,255,0.2)', 
-                  borderRadius: '50%', 
-                  padding: '20px',
-                  backdropFilter: 'blur(10px)'
-                }}></i>
-              </div>
-              <h2 className="mb-2" style={{ fontSize: '2.5rem', fontWeight: '700' }}>{stats.totalParents}</h2>
-              <p className="mb-0" style={{ fontSize: '1.1rem', opacity: '0.9' }}>Total Parents</p>
-              <Badge bg="light" text="dark" className="mt-2 badge-enhanced">
-                <i className="fas fa-heart me-1"></i>
-                Connected
-              </Badge>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card className="text-center card-enhanced" style={{ 
-            background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-            color: 'white',
-            border: 'none',
-            boxShadow: '0 8px 25px rgba(67, 233, 123, 0.3)'
-          }}>
-            <Card.Body className="p-4">
-              <div className="mb-3">
-                <i className="fas fa-school fa-3x" style={{ 
-                  background: 'rgba(255,255,255,0.2)', 
-                  borderRadius: '50%', 
-                  padding: '20px',
-                  backdropFilter: 'blur(10px)'
-                }}></i>
-              </div>
-              <h2 className="mb-2" style={{ fontSize: '2.5rem', fontWeight: '700' }}>{stats.totalClasses}</h2>
-              <p className="mb-0" style={{ fontSize: '1.1rem', opacity: '0.9' }}>Total Classes</p>
-              <Badge bg="light" text="dark" className="mt-2 badge-enhanced">
-                <i className="fas fa-graduation-cap me-1"></i>
-                Active
-              </Badge>
-            </Card.Body>
-          </Card>
-        </Col>
+
+      <Row className="mb-4 g-3">
+        {statCards.map(({ key, value, title, icon, badgeIcon, badgeLabel, accent }) => {
+          const palette = accentPalette[accent];
+          return (
+            <Col md={3} sm={6} xs={12} key={key}>
+              <Card
+                className="text-center card-enhanced"
+                style={{
+                  background: palette.background,
+                  color: '#ffffff',
+                  border: 'none',
+                  boxShadow: palette.shadow,
+                  minHeight: '100%'
+                }}
+              >
+                <Card.Body className="p-4">
+                  <div className="mb-3 d-flex justify-content-center">
+                    <i
+                      className={`${icon} fa-3x`}
+                      style={{
+                        background: palette.iconBackground,
+                        borderRadius: '28px',
+                        padding: '18px',
+                        color: '#ffffff'
+                      }}
+                    ></i>
+                  </div>
+                  <h2 className="mb-2" style={{ fontSize: '2.35rem', fontWeight: 700 }}>{value}</h2>
+                  <p className="mb-0" style={{ fontSize: '1.05rem', color: '#ffffff' }}>{title}</p>
+                  <Badge
+                    className="mt-3"
+                    style={{
+                      background: palette.badgeBackground,
+                      color: palette.badgeColor,
+                      border: 'none',
+                      fontWeight: 700,
+                      letterSpacing: '0.02em'
+                    }}
+                  >
+                    <i className={`${badgeIcon} me-1`}></i>
+                    {badgeLabel}
+                  </Badge>
+                </Card.Body>
+              </Card>
+            </Col>
+          );
+        })}
       </Row>
 
-      <Row>
+      <Row className="g-4">
         <Col md={6}>
           <Card className="card-enhanced">
-            <Card.Header style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            <Card.Header style={{
+              background: 'linear-gradient(120deg, rgba(26, 115, 232, 0.95) 0%, rgba(21, 87, 188, 0.95) 100%)',
               color: 'white',
               border: 'none'
             }}>
@@ -197,15 +317,15 @@ const AdminOverview = () => {
               <div className="text-center py-4">
                 <i className="fas fa-clock fa-3x text-muted mb-3"></i>
                 <h6 className="text-muted">No recent activity to display</h6>
-                <p className="text-muted small">Activity will appear here as users interact with the system</p>
+                <p className="text-muted small mb-0">Activity will appear here as users interact with the system</p>
               </div>
             </Card.Body>
           </Card>
         </Col>
         <Col md={6}>
           <Card className="card-enhanced">
-            <Card.Header style={{ 
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            <Card.Header style={{
+              background: 'linear-gradient(120deg, rgba(161, 66, 244, 0.95) 0%, rgba(200, 81, 139, 0.95) 100%)',
               color: 'white',
               border: 'none'
             }}>
@@ -216,38 +336,17 @@ const AdminOverview = () => {
             </Card.Header>
             <Card.Body className="p-4">
               <div className="d-grid gap-3">
-                <Button 
-                  variant="primary btn-enhanced" 
-                  className="d-flex align-items-center justify-content-center"
-                  onClick={() => navigate('/admin/users#add-student')}
-                >
-                  <i className="fas fa-user-plus me-2"></i>
-                  Add New Student
-                </Button>
-                <Button 
-                  variant="success btn-enhanced" 
-                  className="d-flex align-items-center justify-content-center"
-                  onClick={() => navigate('/admin/users#add-teacher')}
-                >
-                  <i className="fas fa-chalkboard-teacher me-2"></i>
-                  Add New Teacher
-                </Button>
-                <Button 
-                  variant="info btn-enhanced" 
-                  className="d-flex align-items-center justify-content-center"
-                  onClick={() => navigate('/admin/classes#new-class')}
-                >
-                  <i className="fas fa-school me-2"></i>
-                  Create Class
-                </Button>
-                <Button 
-                  variant="warning btn-enhanced" 
-                  className="d-flex align-items-center justify-content-center"
-                  onClick={() => navigate('/admin/announcements#compose')}
-                >
-                  <i className="fas fa-bullhorn me-2"></i>
-                  Send Announcement
-                </Button>
+                {quickActions.map(({ key, label, icon, styles, onClick }) => (
+                  <Button
+                    key={key}
+                    className="btn-enhanced d-flex align-items-center justify-content-center"
+                    style={styles}
+                    onClick={onClick}
+                  >
+                    <i className={`${icon} me-2`}></i>
+                    {label}
+                  </Button>
+                ))}
               </div>
             </Card.Body>
           </Card>
@@ -258,3 +357,4 @@ const AdminOverview = () => {
 };
 
 export default AdminOverview;
+
